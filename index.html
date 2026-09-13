@@ -179,6 +179,11 @@ textarea#paste{height:118px; font-family:var(--mono); font-size:11.5px; resize:v
 .dot.live{background:var(--safe); box-shadow:0 0 0 3px rgba(85,179,148,.18)}
 .dot.err{background:var(--danger)}
 .clamp{color:var(--warn); font-size:10px; margin-left:3px}
+.bar.compact{grid-template-columns:repeat(6,1fr); border:1px solid var(--line); border-radius:4px; border-bottom:1px solid var(--line)}
+.bar.compact>div{padding:13px 16px; border-bottom:0}
+.bar.compact .v{font-size:19px}
+.recon{margin-top:14px; padding:13px 16px; border-left:2px solid var(--accent); background:rgba(110,168,216,.07); border-radius:0 3px 3px 0; font-size:12.5px; line-height:1.6}
+.recon b{font-family:var(--mono); font-weight:500}
 .sync{display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start; margin-top:22px; padding-top:20px; border-top:1px solid var(--soft)}
 @media(max-width:1080px){.sync{grid-template-columns:1fr}}
 
@@ -233,9 +238,9 @@ textarea#paste{height:118px; font-family:var(--mono); font-size:11.5px; resize:v
 
   <div class="grp">
     <h2>พอร์ตมาสเตอร์</h2>
-    <div class="f"><label>Balance (USD)</label><input type="number" id="balance" value="30000" step="any"></div>
+    <div class="f"><label>Balance (USD)</label><input type="number" id="balance" value="70011" step="any"></div>
     <div class="f row2">
-      <div class="f" style="margin:0"><label>Leverage 1:</label><input type="number" id="lev" value="100" step="any"></div>
+      <div class="f" style="margin:0"><label>Leverage 1:</label><input type="number" id="lev" value="500" step="any"></div>
       <div class="f" style="margin:0"><label>Stop Out (%)</label><input type="number" id="so" value="20" step="any"></div>
     </div>
     <div class="f row2">
@@ -257,7 +262,7 @@ textarea#paste{height:118px; font-family:var(--mono); font-size:11.5px; resize:v
     <h2>สินค้าและต้นทุน</h2>
     <div class="f"><label>Symbol</label>
       <select id="sym">
-        <option value="USOUSD.sc">USOUSD.sc — WTI บัญชีเซ็นต์ (ทุกค่าเป็น USC)</option>
+        <option value="USOUSD.sc" selected>USOUSD.sc — WTI บัญชีเซ็นต์ (ทุกค่าเป็น USC)</option>
         <option value="USOUSD">USOUSD — น้ำมันดิบ WTI</option>
         <option value="XAUUSD">XAUUSD — ทองคำ</option>
         <option value="BTCUSD">BTCUSD — บิตคอยน์</option>
@@ -270,14 +275,14 @@ textarea#paste{height:118px; font-family:var(--mono); font-size:11.5px; resize:v
       <div class="f" style="margin:0"><label>ทศนิยม</label><input type="number" id="dg" value="3" step="1" min="0" max="8"></div>
     </div>
     <div class="f row2">
-      <div class="f" style="margin:0"><label>Swap /lot /คืน</label><input type="number" id="swap" value="0" step="any" placeholder="7.2841"></div>
+      <div class="f" style="margin:0"><label>Swap /lot /คืน</label><input type="number" id="swap" value="7.2841" step="any" placeholder="7.2841"></div>
       <div class="f" style="margin:0"><label>หน่วยของ swap</label>
-        <select id="swapUnit"><option value="money">จำนวนเงิน</option><option value="points">points</option></select></div>
+        <select id="swapUnit"><option value="money">จำนวนเงิน</option><option value="points" selected>points</option></select></div>
     </div>
     <div class="f row2">
       <div class="f" style="margin:0"><label>ถือมาแล้ว (วัน)</label><input type="number" id="days" value="0" step="1" min="0"></div>
       <div class="f" style="margin:0"><label>คืนที่คิดสามเท่า</label>
-        <select id="triple"><option value="none">ไม่คิด</option><option value="yes">มีสัปดาห์ละหนึ่งคืน</option></select></div>
+        <select id="triple"><option value="none">ไม่คิด</option><option value="yes" selected>มีสัปดาห์ละหนึ่งคืน</option></select></div>
     </div>
     <div class="f"><label>Commission /lot (ไป-กลับ)</label><input type="number" id="comm" value="0" step="any"></div>
     <p class="hint" id="swapHint">ถ้า Swap type ในสเปกเขียนว่า In points ให้เลือกหน่วยเป็น points แล้วใส่เลขจากสเปกตรง ๆ ค่าบวกคือได้รับ ค่าลบคือจ่าย</p>
@@ -291,16 +296,16 @@ textarea#paste{height:118px; font-family:var(--mono); font-size:11.5px; resize:v
         <button type="button" data-dir="-1" aria-pressed="false">Sell — ลากขึ้น</button>
       </div></div>
     <div class="f row2">
-      <div class="f" style="margin:0"><label>ราคาไม้แรก</label><input type="number" id="entry" value="62.000" step="any"></div>
-      <div class="f" style="margin:0"><label>ราคาปัจจุบัน</label><input type="number" id="cur" value="58.500" step="any"></div>
+      <div class="f" style="margin:0"><label>ราคาไม้แรก</label><input type="number" id="entry" value="115.631" step="any"></div>
+      <div class="f" style="margin:0"><label>ราคาปัจจุบัน</label><input type="number" id="cur" value="100.102" step="any"></div>
     </div>
     <div class="f row2">
-      <div class="f" style="margin:0"><label>ระยะไม้แก้ (Step)</label><input type="number" id="step" value="0.50" step="any"></div>
+      <div class="f" style="margin:0"><label>ระยะไม้แก้ (Step)</label><input type="number" id="step" value="1.000" step="any"></div>
       <div class="f" style="margin:0"><label>ไม้แก้สูงสุด</label><input type="number" id="maxlv" value="30" step="1" min="1"></div>
     </div>
     <div class="f row2">
       <div class="f" style="margin:0"><label>Lot ไม้แรก</label><input type="number" id="lot0" value="0.01" step="any"></div>
-      <div class="f" style="margin:0"><label>ตัวคูณ Lot</label><input type="number" id="mult" value="1.30" step="any"></div>
+      <div class="f" style="margin:0"><label>ตัวคูณ Lot</label><input type="number" id="mult" value="1.00" step="any"></div>
     </div>
     <div class="f row2">
       <div class="f" style="margin:0"><label>Lot step</label><input type="number" id="lotstep" value="0.01" step="any"></div>
@@ -407,9 +412,12 @@ USOUSD	buy	0.02	61.000"></textarea>
     <p class="sub">ให้หน้านี้ดึงตารางเดิมซ้ำเองทุก ๆ กี่วินาทีก็ได้ ไม่ต้องคัดลอกมาวางใหม่</p>
     <div class="sync" style="border-top:0; padding-top:0; margin-top:0">
       <div>
-        <div class="f"><label>ลิงก์ CSV ที่เผยแพร่จาก Google Sheets</label>
-          <input type="text" id="syncUrl" placeholder="https://docs.google.com/spreadsheets/d/e/..../pub?gid=0&single=true&output=csv" style="font-size:11.5px"></div>
+        <div class="f"><label>ลิงก์ Google Sheets</label>
+          <input type="text" id="syncUrl" style="font-size:11.5px"
+            value="https://docs.google.com/spreadsheets/d/1ItaEm_8OR9_-lMnQxmi3lLidxuoM777bR8MvdcHmDTw/edit?gid=1118030370"
+            placeholder="วางลิงก์ชีตแบบปกติที่มี /d/<รหัส>/edit?gid=..."></div>
         <div class="tools" style="margin-top:10px">
+          <div class="f" style="margin:0; width:150px"><label>เลขบัญชีมาสเตอร์</label><input type="text" id="feedAcct" value="21784234" style="font-family:var(--mono)"></div>
           <div class="f" style="margin:0; width:130px"><label>ดึงทุก ๆ (วินาที)</label><input type="number" id="syncEvery" value="30" min="5" step="1"></div>
           <button class="btn" id="syncNow" style="align-self:flex-end">ดึงเดี๋ยวนี้</button>
           <button class="btn ghost" id="syncStart" style="align-self:flex-end">เริ่มดึงอัตโนมัติ</button>
@@ -422,11 +430,26 @@ USOUSD	buy	0.02	61.000"></textarea>
         <p class="hint" id="syncMsg" style="margin-top:12px"><span class="dot"></span>ยังไม่ได้เชื่อมต่อ</p>
       </div>
       <div class="fmt">
-        <p style="margin:0 0 8px; color:var(--t2)">วิธีเผยแพร่ชีตเป็น CSV</p>
-        <p style="margin:0 0 6px">ใน Google Sheets เลือก <code>ไฟล์ → แชร์ → เผยแพร่บนเว็บ</code></p>
-        <p style="margin:0 0 6px">เลือกชีตที่ต้องการ แล้วเลือกรูปแบบ <code>CSV</code></p>
-        <p style="margin:0 0 6px">คัดลอกลิงก์ที่ได้มาวางในช่องซ้าย</p>
+        <p style="margin:0 0 8px; color:var(--t2)">รองรับสองรูปแบบอัตโนมัติ</p>
+        <p style="margin:0 0 6px"><b style="color:var(--t2)">ตารางสถานะบัญชี</b> มีคอลัมน์ Balance, Equity, Margin_Free — ระบบจะหยิบแถวล่าสุดของเลขบัญชีที่ระบุ</p>
+        <p style="margin:0 0 14px"><b style="color:var(--t2)">ตารางรายไม้</b> มีคอลัมน์ lot กับราคาเปิด — ระบบจะเอาไปแทนตะกร้าทั้งหมด</p>
+        <p style="margin:0 0 8px; color:var(--t2)">ใช้ลิงก์แบบไหน</p>
+        <p style="margin:0 0 6px">วาง <b style="color:var(--t2)">ลิงก์ชีตแบบปกติ</b> ที่มี <code>/d/รหัส/edit?gid=...</code> ช่องทางนี้ไม่ติด CORS ใช้ได้แม้เปิดไฟล์จากเครื่อง</p>
+        <p style="margin:0 0 6px">ลิงก์ <code>/pub?output=csv</code> ก็ใช้ได้ แต่เฉพาะตอนเปิดหน้านี้ผ่าน https เท่านั้น</p>
+        <p style="margin:0 0 6px">ชีตต้องตั้งแชร์เป็น <code>ทุกคนที่มีลิงก์ · ผู้อ่าน</code></p>
+        <p style="margin:0 0 6px"><code>gid</code> ต้องชี้ไปที่แท็บที่มีตาราง log</p>
         <p style="margin:12px 0 0">ถ้าใส่คอลัมน์ชื่อ <code>balance</code> และ <code>current</code> ไว้ในชีตด้วย ระบบจะอัปเดตทุนกับราคาปัจจุบันให้อัตโนมัติ</p>
+      </div>
+      <div id="feedPanel" style="display:none; grid-column:1/-1; margin-top:20px; padding-top:20px; border-top:1px solid var(--soft)">
+        <div class="bar compact">
+          <div><div class="k">Balance</div><div class="v num" id="fBal">—</div><div class="s" id="fPort">—</div></div>
+          <div><div class="k">Equity</div><div class="v num" id="fEq">—</div><div class="s" id="fFl">—</div></div>
+          <div><div class="k">Margin</div><div class="v num" id="fMg">—</div><div class="s">Equity − Free Margin</div></div>
+          <div><div class="k">Free Margin</div><div class="v num" id="fFm">—</div><div class="s" id="fFmS">—</div></div>
+          <div><div class="k">Margin Level</div><div class="v num" id="fLv">—</div><div class="s">จากตัวเลขจริง</div></div>
+          <div><div class="k">อายุข้อมูล</div><div class="v num" id="fAge">—</div><div class="s" id="fAt">—</div></div>
+        </div>
+        <div id="fRecon"></div>
       </div>
     </div>
   </section>
@@ -675,6 +698,7 @@ function run(){
   if ($('prAuto').checked) saveLast();
   renderScenarios(c);
   renderAlerts(c, now, so);
+  renderFeed(c, now);
 }
 
 /* ---- instrument bar ---- */
@@ -988,6 +1012,119 @@ function renderAlerts(c, s, so){
   $('alerts').innerHTML = a;
 }
 
+/* ============ master account feed ============ */
+let FEED = null;
+const AHEAD = {
+  bal :['balance','ยอดเงิน','ทุน'],
+  eq  :['equity','อิควิตี้'],
+  free:['margin_free','margin free','free margin','free_margin','freemargin','margin free '],
+  acct:['account_no','account no','account','accountno','เลขบัญชี'],
+  type:['type','ประเภท'],
+  port:['port_name','port name','portfolio','ชื่อพอร์ต'],
+  at  :['recorded_at','recorded at','timestamp','เวลาที่บันทึก'],
+  date:['date','วันที่'],
+  pnl :['net_pnl','net pnl','pnl']
+};
+function parseAccountFeed(text){
+  const lines = text.split(/\r?\n/).filter(l=>l.trim().length);
+  if (!lines.length) return [];
+  const delim = text.indexOf('\t')>=0 ? '\t' : ',';
+  const grid = lines.map(l=>l.split(delim).map(c=>c.trim().replace(/^"|"$/g,'').replace(/^\||\|$/g,'').trim()));
+  let best=null, bestScore=0;
+  grid.forEach((row,i)=>{
+    const map={}; let score=0;
+    row.forEach((cell,j)=>{
+      const c = cell.toLowerCase();
+      for (const k in AHEAD) if (map[k]===undefined && AHEAD[k].indexOf(c)>=0){ map[k]=j; score++; }
+    });
+    if (map.bal!==undefined && map.eq!==undefined && score>bestScore){ bestScore=score; best={i,map}; }
+  });
+  if (!best) return [];
+  const num = v => { const x = parseFloat(String(v).replace(/[^0-9.\-]/g,'')); return isFinite(x)?x:NaN; };
+  const m = best.map, out=[];
+  for (let i=best.i+1; i<grid.length; i++){
+    const r = grid[i];
+    const b = num(r[m.bal]), e = num(r[m.eq]);
+    if (!isFinite(b) || !isFinite(e)) continue;
+    if (b===0 && e===0) continue;              // ข้ามแถวที่บันทึกพลาดเป็นศูนย์
+    out.push({
+      balance:b, equity:e,
+      free: m.free!==undefined ? num(r[m.free]) : NaN,
+      acct: m.acct!==undefined ? String(r[m.acct]||'').replace(/[^0-9]/g,'') : '',
+      type: m.type!==undefined ? (r[m.type]||'') : '',
+      port: m.port!==undefined ? (r[m.port]||'') : '',
+      at:   (m.at!==undefined && r[m.at]) ? r[m.at] : (m.date!==undefined ? (r[m.date]||'') : '')
+    });
+  }
+  return out;
+}
+function parseWhen(t){
+  if (!t) return null;
+  let x = String(t).trim().replace(/\//g,'-');
+  const mm = x.match(/(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (!mm) return null;
+  return new Date(+mm[1], +mm[2]-1, +mm[3], +(mm[4]||0), +(mm[5]||0), +(mm[6]||0));
+}
+function applyFeed(rows, live){
+  const want = $('feedAcct').value.replace(/[^0-9]/g,'');
+  let rs = want ? rows.filter(r=>r.acct===want) : [];
+  if (!rs.length) rs = rows.filter(r=>/master/i.test(r.type) || /master/i.test(r.port));
+  if (!rs.length) rs = rows;
+  if (!rs.length) return false;
+  FEED = rs[rs.length-1];
+  $('balance').value = FEED.balance;
+  const msg = `พอร์ตมาสเตอร์อัปเดตแล้ว · บันทึกไว้ ${FEED.at || 'ไม่ระบุเวลา'} · ดึงเมื่อ ${new Date().toLocaleTimeString('th-TH')}`;
+  if (live) syncMsg(msg,'live'); else $('impMsg').innerHTML = `<span class="ok">${msg}</span>`;
+  run();
+  return true;
+}
+function renderFeed(c, now){
+  if (!FEED){ $('feedPanel').style.display='none'; return; }
+  $('feedPanel').style.display='block';
+  const mg = isFinite(FEED.free) ? (FEED.equity - FEED.free) : NaN;
+  const fl = FEED.equity - FEED.balance;
+  const lv = isFinite(mg) && mg>0 ? FEED.equity/mg*100 : NaN;
+
+  $('fBal').textContent = usd0(FEED.balance);
+  $('fPort').textContent = (FEED.port || 'บัญชี ' + (FEED.acct||'—')).slice(0,34);
+  $('fEq').textContent = usd0(FEED.equity);
+  $('fEq').className = 'v num ' + (fl<0?'dg':'ok');
+  $('fFl').textContent = 'ลอยตัว ' + usd(fl) + ' · ' + pct(fl/FEED.balance*100, 2);
+  $('fMg').textContent = isFinite(mg) ? usd(mg) : '—';
+  $('fFm').textContent = isFinite(FEED.free) ? usd0(FEED.free) : '—';
+  $('fFmS').textContent = isFinite(FEED.free) ? 'เหลือ ' + pct(FEED.free/FEED.balance*100) + ' ของทุน' : 'ชีตไม่มีคอลัมน์นี้';
+  $('fLv').textContent = isFinite(lv) ? lv.toLocaleString('en-US',{maximumFractionDigits:0})+'%' : '—';
+  $('fLv').className = 'v num ' + (!isFinite(lv) ? '' : lv<=c.so?'cr':lv<=c.mc?'dg':lv<300?'wr':'ok');
+
+  const when = parseWhen(FEED.at);
+  if (when){
+    const mins = (Date.now() - when.getTime())/60000;
+    const txt = mins<90 ? Math.round(mins)+' นาที' : mins<2880 ? (mins/60).toFixed(1)+' ชม.' : (mins/1440).toFixed(1)+' วัน';
+    $('fAge').textContent = txt;
+    $('fAge').className = 'v num ' + (mins<15?'ok':mins<180?'wr':'dg');
+  } else { $('fAge').textContent='—'; $('fAge').className='v num dim'; }
+  $('fAt').textContent = FEED.at || '—';
+
+  // เทียบโมเดลกับของจริง
+  let h = '';
+  if (isFinite(mg) && mg>0){
+    const base = now.margin / c.mmult;                 // margin ตามสูตรที่ตัวคูณ 1
+    const need = mg / base;
+    const impliedLots = mg / (c.cs * c.cur / c.lev);   // lot เทียบเท่าที่อัตราปกติ
+    h = `<div class="recon">
+      ตะกร้าในเครื่องมือมี <b>${lotf(now.lots)}</b> lot ที่อัตราปกติ 1:${c.lev} ต้องใช้ margin <b>${usd(base)}</b>
+      แต่ฟีดบอกว่าใช้จริง <b>${usd(mg)}</b> ซึ่งเทียบเท่า <b>${lotf(impliedLots)}</b> lot ที่อัตราปกติ
+      <br>ส่วนต่าง <b>${need.toFixed(3)}</b> เท่า ${Math.abs(need-1)<0.03
+        ? '— ตรงกันดี'
+        : '— ถ้าตะกร้าตรงกับของจริงแล้ว ส่วนต่างนี้คือ margin พิเศษของโบรกเกอร์ ถ้าตะกร้ายังเป็นค่าจำลองอยู่ ให้นำเข้าไม้จริงก่อนแล้วค่อยอ่านตัวเลขนี้'}
+      <br><button class="btn ghost" id="reconBtn" style="width:auto; padding:7px 16px; margin-top:9px">ตั้งตัวคูณ margin เป็น ${need.toFixed(3)}</button>
+    </div>`;
+  }
+  $('fRecon').innerHTML = h;
+  const rb = $('reconBtn');
+  if (rb) rb.onclick = ()=>{ $('mmult').value = Math.round((mg/(now.margin/c.mmult))*1000)/1000; run(); };
+}
+
 /* ============ import parser ============ */
 const HEAD = {
   type:['type','ชนิด','ประเภท','side','direction','order'],
@@ -1043,6 +1180,8 @@ function parseTable(text){
 }
 
 function applyImport(text, live){
+  const feed = parseAccountFeed(text);
+  if (feed.length) return applyFeed(feed, live);
   const {rows, skipped, err, extra} = parseTable(text);
   if (err || !rows.length){
     const m = '<span class="dg">อ่านข้อมูลไม่ได้ ตรวจว่ามีคอลัมน์ lot และราคาเปิดครบ</span>';
@@ -1172,9 +1311,55 @@ let syncTimer=null, fileHandle=null, fileMod=0, fileTimer=null;
 function syncMsg(html, cls){
   $('syncMsg').innerHTML = `<span class="dot ${cls||''}"></span>` + html;
 }
+function sheetIds(url){
+  const m = url.match(/\/spreadsheets\/d\/(?!e\/)([a-zA-Z0-9_-]{20,})/);
+  if (!m) return null;
+  const g = url.match(/[?&#]gid=(\d+)/);
+  return {id:m[1], gid:g ? g[1] : '0'};
+}
+let gvizSeq = 0;
+function pullGviz(ids){
+  return new Promise((resolve, reject)=>{
+    const cb = '__gviz' + (++gvizSeq);
+    const el = document.createElement('script');
+    let done = false;
+    const clean = ()=>{ try{ delete window[cb]; }catch(e){ window[cb] = undefined; } if (el.parentNode) el.parentNode.removeChild(el); };
+    const timer = setTimeout(()=>{ if(done) return; done=true; clean(); reject(new Error('หมดเวลารอคำตอบจาก Google')); }, 15000);
+    window[cb] = d =>{ if(done) return; done=true; clearTimeout(timer); clean(); resolve(d); };
+    el.onerror = ()=>{ if(done) return; done=true; clearTimeout(timer); clean(); reject(new Error('เปิดชีตไม่ได้ อาจยังไม่ได้ตั้งแชร์เป็นทุกคนที่มีลิงก์')); };
+    el.src = `https://docs.google.com/spreadsheets/d/${ids.id}/gviz/tq`
+           + `?tqx=out:json;responseHandler:${cb}&gid=${ids.gid}&headers=0&_=${Date.now()}`;
+    document.head.appendChild(el);
+  });
+}
+function gvizToTable(d){
+  const t = d && d.table;
+  if (!t || !t.rows) return '';
+  const cell = c => !c ? '' : (c.f != null ? c.f : (c.v != null ? c.v : ''));
+  return t.rows.map(r => (r.c||[]).map(cell).join('\t')).join('\n');
+}
+
 async function pullURL(silent){
   const url = $('syncUrl').value.trim();
-  if (!url){ syncMsg('<span class="wr">ยังไม่ได้ใส่ลิงก์ CSV</span>','err'); return; }
+  if (!url){ syncMsg('<span class="wr">ยังไม่ได้ใส่ลิงก์ชีต</span>','err'); return; }
+
+  // ช่องทางหลัก: gviz ผ่าน script tag จึงไม่มีเรื่อง CORS เลย ใช้ได้แม้เปิดไฟล์จากเครื่อง
+  const ids = sheetIds(url);
+  if (ids){
+    try{
+      const txt = gvizToTable(await pullGviz(ids));
+      if (!txt.trim()) throw new Error('แท็บนี้ว่าง ตรวจว่า gid ชี้ไปถูกแท็บ');
+      $('paste').value = txt;
+      applyImport(txt, true);
+    }catch(e){
+      syncMsg(`<span class="dg">อ่านชีตไม่สำเร็จ: ${e.message}</span>
+        <span class="dim">ตรวจสองอย่าง หนึ่งคือชีตต้องตั้งแชร์เป็นทุกคนที่มีลิงก์ผู้อ่าน สองคือ gid ต้องตรงกับแท็บที่มีตาราง log</span>`,'err');
+      stopSync();
+    }
+    return;
+  }
+
+  // ช่องทางสำรอง: ลิงก์ /pub?output=csv ซึ่งต้องพึ่ง CORS
   try{
     const r = await fetch(url, {cache:'no-store'});
     if (!r.ok) throw new Error('HTTP '+r.status);
@@ -1183,7 +1368,9 @@ async function pullURL(silent){
     $('paste').value = txt;
     applyImport(txt, true);
   }catch(e){
-    syncMsg(`<span class="dg">ดึงข้อมูลไม่สำเร็จ: ${e.message}</span> <span class="dim">ถ้าขึ้น Failed to fetch แปลว่าชีตยังไม่ได้เผยแพร่เป็น CSV หรือเบราว์เซอร์บล็อกเพราะเปิดไฟล์จากเครื่อง ลองวางไฟล์นี้บนเว็บเซิร์ฟเวอร์ หรือใช้ปุ่มเฝ้าดูไฟล์ในเครื่องแทน</span>`,'err');
+    syncMsg(`<span class="dg">ดึงข้อมูลไม่สำเร็จ: ${e.message}</span>
+      <span class="dim">ลิงก์แบบ /pub?output=csv ใช้ได้เฉพาะตอนเปิดหน้านี้ผ่าน https
+      ตอนนี้คุณเปิดจากไฟล์ในเครื่อง เบราว์เซอร์จึงบล็อก วิธีแก้ที่เร็วที่สุดคือวางลิงก์ชีตแบบปกติที่มี /d/รหัส/edit?gid=... แทน</span>`,'err');
     stopSync();
   }
 }
@@ -1229,7 +1416,7 @@ $('syncStop').onclick = ()=>{ stopSync(); if (fileTimer){clearInterval(fileTimer
 $('watchFile').onclick = watchLocal;
 
 /* ============ settings profiles ============ */
-const KEYS = ['balance','lev','so','mc','mbasis','cs','dg','swap','days','comm','entry','cur','step','maxlv','lot0','mult','lotstep','minlot','flotstep','fminlot','mmult','swapUnit','triple'];
+const KEYS = ['balance','lev','so','mc','mbasis','cs','dg','swap','days','comm','entry','cur','step','maxlv','lot0','mult','lotstep','minlot','flotstep','fminlot','mmult','swapUnit','triple','feedAcct'];
 const STORE='rmrc_profiles_v1', LASTKEY='rmrc_last_v1';
 function snapshot(){
   const o = {v:1, sym:$('sym').value, dir:DIR, src:SRC, followers:FOLLOWERS,
