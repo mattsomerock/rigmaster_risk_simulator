@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RIG MASTER — Risk Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0D141A; --panel:#131D26; --panel2:#182530; --raise:#1D2C38;
+  --line:#22323F; --soft:#1A2732;
+  --t1:#E2EAEF; --t2:#93A8B6; --t3:#5F7484;
+  --accent:#6EA8D8; --accent-dim:#2D4759;
+  --safe:#55B394; --warn:#D9A441; --danger:#D9604A; --critical:#C2352A;
+  --sans:'IBM Plex Sans Thai','IBM Plex Sans',-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ink); color:var(--t1);
+  font-family:var(--sans); font-size:14px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+
+/* ---------- masthead ---------- */
+.mast{
+  display:flex; align-items:baseline; gap:16px; flex-wrap:wrap;
+  padding:20px 28px 18px; border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#111A22,#0D141A);
+}
+.mast h1{
+  font-size:15px; font-weight:600; margin:0; letter-spacing:.16em;
+  color:var(--t1);
+}
+.mast h1 b{font-weight:400; color:var(--t3); letter-spacing:.04em}
+.mast .ctx{margin-left:auto; display:flex; gap:22px; align-items:baseline}
+.mast .ctx span{font-size:12px; color:var(--t3)}
+.mast .ctx b{font-family:var(--mono); font-weight:500; color:var(--t2); font-size:12px}
+
+/* ---------- shell ---------- */
+.shell{display:grid; grid-template-columns:352px minmax(0,1fr); min-height:calc(100vh - 60px)}
+.rail{border-right:1px solid var(--line); background:var(--panel); padding:0 0 40px}
+.stage{padding:0 0 60px; min-width:0}
+
+/* ---------- rail form ---------- */
+.grp{border-bottom:1px solid var(--soft); padding:18px 22px 20px}
+.grp>h2{
+  font-size:12px; font-weight:600; margin:0 0 14px; color:var(--accent);
+  display:flex; align-items:center; gap:9px;
+}
+.grp>h2::after{content:''; flex:1; height:1px; background:var(--soft)}
+.f{display:flex; flex-direction:column; gap:5px; margin-bottom:11px}
+.f.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.f label{font-size:12px; color:var(--t2); font-weight:400}
+.hint{font-size:11px; color:var(--t3); line-height:1.4}
+input,select,textarea{
+  background:var(--ink); border:1px solid var(--line); color:var(--t1);
+  border-radius:3px; padding:8px 10px; font-size:13px;
+  font-family:var(--mono); font-variant-numeric:tabular-nums; width:100%;
+  transition:border-color .14s, background .14s;
+}
+select,textarea{font-family:var(--sans)}
+input:focus,select:focus,textarea:focus{outline:none; border-color:var(--accent); background:#0A1117}
+input:focus-visible,select:focus-visible,button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+.seg{display:flex; border:1px solid var(--line); border-radius:3px; overflow:hidden}
+.seg button{
+  flex:1; background:transparent; border:0; color:var(--t2); padding:7px 4px;
+  font-size:12px; font-family:var(--sans); cursor:pointer; transition:.14s;
+}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent-dim); color:var(--t1)}
+.btn{
+  width:100%; background:var(--accent); color:#07121B; border:0; border-radius:3px;
+  padding:11px; font-size:13px; font-weight:600; font-family:var(--sans);
+  cursor:pointer; transition:.14s;
+}
+.btn:hover{background:#8ABCE4}
+.btn.ghost{background:transparent; border:1px solid var(--line); color:var(--t2); font-weight:400}
+.btn.ghost:hover{border-color:var(--accent); color:var(--t1); background:transparent}
+
+/* ---------- instrument bar ---------- */
+.bar{display:grid; grid-template-columns:repeat(5,1fr); border-bottom:1px solid var(--line)}
+.bar>div{padding:17px 20px 16px; border-right:1px solid var(--soft)}
+.bar>div:last-child{border-right:0}
+.bar .k{font-size:11px; color:var(--t3); margin-bottom:5px}
+.bar .v{font-size:25px; font-weight:500; line-height:1.15}
+.bar .s{font-size:11px; color:var(--t3); margin-top:3px}
+.lvlbar{height:3px; background:var(--soft); margin-top:9px; border-radius:2px; overflow:hidden}
+.lvlbar i{display:block; height:100%; border-radius:2px; transition:width .3s ease, background .3s}
+
+/* ---------- panels ---------- */
+.sec{padding:24px 28px 26px; border-bottom:1px solid var(--soft)}
+.sec>h3{
+  font-size:13px; font-weight:600; margin:0 0 4px; color:var(--t1);
+}
+.sec>.sub{font-size:12px; color:var(--t3); margin:0 0 18px}
+
+/* ---------- ladder ---------- */
+.ladderwrap{display:grid; grid-template-columns:minmax(280px,1fr) 300px; gap:28px; align-items:start}
+#ladder{width:100%; height:auto; display:block}
+.verdict{border:1px solid var(--line); border-radius:4px; background:var(--panel2); padding:18px 18px 16px}
+.verdict .big{font-size:38px; font-weight:600; line-height:1.05; letter-spacing:-.02em}
+.verdict .cap{font-size:12px; color:var(--t2); margin-bottom:6px}
+.verdict .pct{font-size:14px; color:var(--t2); margin-top:5px}
+.vlist{list-style:none; margin:16px 0 0; padding:14px 0 0; border-top:1px solid var(--line)}
+.vlist li{display:flex; justify-content:space-between; gap:12px; padding:5px 0; font-size:12.5px}
+.vlist li span{color:var(--t2)}
+.vlist li b{font-family:var(--mono); font-weight:500; font-variant-numeric:tabular-nums}
+
+/* ---------- tables ---------- */
+.tbl{width:100%; border-collapse:collapse; font-size:12.5px}
+.tbl th{
+  text-align:right; font-weight:500; font-size:11px; color:var(--t3);
+  padding:0 12px 8px; border-bottom:1px solid var(--line); white-space:nowrap;
+}
+.tbl th:first-child,.tbl td:first-child{text-align:left; padding-left:0}
+.tbl th:last-child,.tbl td:last-child{padding-right:0}
+.tbl td{
+  padding:8px 12px; text-align:right; border-bottom:1px solid var(--soft);
+  font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.tbl td.tx{font-family:var(--sans)}
+.tbl tbody tr:hover{background:var(--panel2)}
+.tbl tr.me td{background:#16232E}
+.scroll{overflow-x:auto; margin:0 -4px; padding:0 4px}
+
+.tag{display:inline-block; font-size:10.5px; padding:2px 7px; border-radius:2px; font-family:var(--sans)}
+.tag.ok{background:rgba(85,179,148,.14); color:var(--safe)}
+.tag.wr{background:rgba(217,164,65,.14); color:var(--warn)}
+.tag.dg{background:rgba(217,96,74,.16); color:var(--danger)}
+.tag.cr{background:var(--critical); color:#fff}
+
+.ok{color:var(--safe)} .wr{color:var(--warn)} .dg{color:var(--danger)} .cr{color:var(--critical)}
+.dim{color:var(--t3)}
+
+/* ---------- alert ---------- */
+.alert{
+  display:flex; gap:13px; align-items:flex-start; padding:13px 16px;
+  border-left:2px solid var(--warn); background:rgba(217,164,65,.07);
+  border-radius:0 3px 3px 0; margin-bottom:16px; font-size:12.5px; line-height:1.5;
+}
+.alert.dgr{border-color:var(--danger); background:rgba(217,96,74,.07)}
+.alert b{font-weight:600}
+.alert .ico{font-family:var(--mono); color:var(--warn); font-size:13px; flex:none; padding-top:1px}
+.alert.dgr .ico{color:var(--danger)}
+
+/* ---------- import ---------- */
+.imp{display:grid; grid-template-columns:1fr 260px; gap:20px; align-items:start}
+textarea#paste{height:118px; font-family:var(--mono); font-size:11.5px; resize:vertical; line-height:1.6}
+.fmt{font-size:11.5px; color:var(--t3); line-height:1.7}
+.fmt code{font-family:var(--mono); color:var(--t2); background:var(--ink); padding:1px 5px; border-radius:2px}
+
+/* ---------- follower editor ---------- */
+.fw{display:grid; grid-template-columns:1.4fr .9fr .9fr .9fr auto; gap:8px; margin-bottom:8px; align-items:center}
+.fw input,.fw select{padding:7px 9px; font-size:12px}
+.fw .x{
+  background:transparent; border:1px solid var(--line); color:var(--t3);
+  border-radius:3px; width:30px; height:32px; cursor:pointer; font-size:14px; line-height:1;
+}
+.fw .x:hover{border-color:var(--danger); color:var(--danger)}
+.fwhead{display:grid; grid-template-columns:1.4fr .9fr .9fr .9fr auto; gap:8px; font-size:11px; color:var(--t3); margin-bottom:7px}
+.fwhead span:last-child{width:30px}
+.modecell{display:flex; gap:5px}
+.modecell select{flex:1.1}
+.modecell input{flex:.8}
+.ratio{
+  flex:.8; display:flex; align-items:center; justify-content:center;
+  border:1px dashed var(--line); border-radius:3px; color:var(--t3);
+  font-family:var(--mono); font-size:12px; font-variant-numeric:tabular-nums;
+}
+.tools{display:flex; gap:9px; flex-wrap:wrap; align-items:center}
+.tools .btn{width:auto; padding:9px 18px}
+.tools input,.tools select{width:auto}
+.dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--t3); margin-right:7px; vertical-align:middle}
+.dot.live{background:var(--safe); box-shadow:0 0 0 3px rgba(85,179,148,.18)}
+.dot.err{background:var(--danger)}
+.clamp{color:var(--warn); font-size:10px; margin-left:3px}
+.sync{display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start; margin-top:22px; padding-top:20px; border-top:1px solid var(--soft)}
+@media(max-width:1080px){.sync{grid-template-columns:1fr}}
+
+.scen{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
+.scen button{
+  background:var(--panel2); border:1px solid var(--line); color:var(--t2);
+  border-radius:3px; padding:6px 11px; font-size:11.5px; cursor:pointer;
+  font-family:var(--sans); transition:.14s;
+}
+.scen button:hover{border-color:var(--accent); color:var(--t1)}
+
+#curve{width:100%; height:auto; display:block; margin-top:6px}
+#ladder text,#curve text{font-family:var(--mono); font-variant-numeric:tabular-nums}
+#ladder text.s,#curve text.s{font-family:var(--sans)}
+
+.foot{padding:22px 28px 40px; font-size:11.5px; color:var(--t3); line-height:1.7; max-width:78ch}
+
+@media(max-width:1080px){
+  .shell{grid-template-columns:1fr}
+  .rail{border-right:0; border-bottom:1px solid var(--line)}
+  .bar{grid-template-columns:repeat(2,1fr)}
+  .bar>div{border-bottom:1px solid var(--soft)}
+  .ladderwrap{grid-template-columns:1fr}
+  .imp{grid-template-columns:1fr}
+  .mast .ctx{margin-left:0; width:100%; gap:16px; flex-wrap:wrap}
+}
+@media(max-width:620px){
+  .bar{grid-template-columns:1fr}
+  .sec{padding:20px 16px}
+  .mast{padding:16px}
+  .fw,.fwhead{grid-template-columns:1fr 1fr; gap:6px}
+  .fwhead{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="mast">
+  <h1>RIG MASTER <b>Risk Console</b></h1>
+  <div class="ctx">
+    <span>สินค้า <b id="ctxSym">USOUSD</b></span>
+    <span>Contract <b id="ctxCS">1,000</b> /lot</span>
+    <span>ราคาปัจจุบัน <b id="ctxPx">—</b></span>
+    <span>ไม้ที่เปิด <b id="ctxN">0</b></span>
+  </div>
+</header>
+
+<div class="shell">
+
+<!-- ========== RAIL ========== -->
+<aside class="rail">
+
+  <div class="grp">
+    <h2>พอร์ตมาสเตอร์</h2>
+    <div class="f"><label>Balance (USD)</label><input type="number" id="balance" value="30000" step="any"></div>
+    <div class="f row2">
+      <div class="f" style="margin:0"><label>Leverage 1:</label><input type="number" id="lev" value="100" step="any"></div>
+      <div class="f" style="margin:0"><label>Stop Out (%)</label><input type="number" id="so" value="20" step="any"></div>
+    </div>
+    <div class="f row2">
+      <div class="f" style="margin:0"><label>Margin Call (%)</label><input type="number" id="mc" value="100" step="any"></div>
+      <div class="f" style="margin:0"><label>คิด margin จาก</label>
+        <select id="mbasis"><option value="market">ราคาตลาด</option><option value="open">ราคาเปิดไม้</option></select></div>
+    </div>
+    <div class="f"><label>ตัวคูณ margin ของโบรกเกอร์</label><input type="number" id="mmult" value="1" step="any"></div>
+    <div class="f"><label>ปรับเทียบกับ Margin จริงใน MT5</label>
+      <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:6px">
+        <input type="number" id="calMg" step="any" placeholder="Margin" title="ตัวเลขช่อง Margin ในแท็บ Trade">
+        <input type="number" id="calLot" step="any" placeholder="Lot รวม" title="ผลรวม lot ของไม้ที่เปิดอยู่ทั้งหมด">
+        <button class="btn" id="calBtn" style="width:auto; padding:8px 13px">ปรับ</button>
+      </div></div>
+    <p class="hint" id="calMsg">โบรกเกอร์มักจำกัด leverage ของสินค้าโภคภัณฑ์ไว้ต่ำกว่า leverage ของบัญชี ใส่ Margin กับ Lot รวมที่เห็นใน MT5 แล้วกดปรับ ระบบจะถอดอัตรา margin ที่ใช้จริงออกมาให้</p>
+  </div>
+
+  <div class="grp">
+    <h2>สินค้าและต้นทุน</h2>
+    <div class="f"><label>Symbol</label>
+      <select id="sym">
+        <option value="USOUSD.sc">USOUSD.sc — WTI บัญชีเซ็นต์ (ทุกค่าเป็น USC)</option>
+        <option value="USOUSD">USOUSD — น้ำมันดิบ WTI</option>
+        <option value="XAUUSD">XAUUSD — ทองคำ</option>
+        <option value="BTCUSD">BTCUSD — บิตคอยน์</option>
+        <option value="NAS100">NAS100 — ดัชนี</option>
+        <option value="EURUSD">EURUSD</option>
+        <option value="CUSTOM">กำหนดเอง</option>
+      </select></div>
+    <div class="f row2">
+      <div class="f" style="margin:0"><label>Contract size</label><input type="number" id="cs" value="1000" step="any"></div>
+      <div class="f" style="margin:0"><label>ทศนิยม</label><input type="number" id="dg" value="3" step="1" min="0" max="8"></div>
+    </div>
+    <div class="f row2">
+      <div class="f" style="margin:0"><label>Swap /lot /คืน</label><input type="number" id="swap" value="0" step="any" placeholder="7.2841"></div>
+      <div class="f" style="margin:0"><label>หน่วยของ swap</label>
+        <select id="swapUnit"><option value="money">จำนวนเงิน</option><option value="points">points</option></select></div>
+    </div>
+    <div class="f row2">
+      <div class="f" style="margin:0"><label>ถือมาแล้ว (วัน)</label><input type="number" id="days" value="0" step="1" min="0"></div>
+      <div class="f" style="margin:0"><label>คืนที่คิดสามเท่า</label>
+        <select id="triple"><option value="none">ไม่คิด</option><option value="yes">มีสัปดาห์ละหนึ่งคืน</option></select></div>
+    </div>
+    <div class="f"><label>Commission /lot (ไป-กลับ)</label><input type="number" id="comm" value="0" step="any"></div>
+    <p class="hint" id="swapHint">ถ้า Swap type ในสเปกเขียนว่า In points ให้เลือกหน่วยเป็น points แล้วใส่เลขจากสเปกตรง ๆ ค่าบวกคือได้รับ ค่าลบคือจ่าย</p>
+  </div>
+
+  <div class="grp">
+    <h2>โครงสร้างกริด</h2>
+    <div class="f"><label>ทิศทาง</label>
+      <div class="seg" id="dirSeg">
+        <button type="button" data-dir="1" aria-pressed="true">Buy — ลากลง</button>
+        <button type="button" data-dir="-1" aria-pressed="false">Sell — ลากขึ้น</button>
+      </div></div>
+    <div class="f row2">
+      <div class="f" style="margin:0"><label>ราคาไม้แรก</label><input type="number" id="entry" value="62.000" step="any"></div>
+      <div class="f" style="margin:0"><label>ราคาปัจจุบัน</label><input type="number" id="cur" value="58.500" step="any"></div>
+    </div>
+    <div class="f row2">
+      <div class="f" style="margin:0"><label>ระยะไม้แก้ (Step)</label><input type="number" id="step" value="0.50" step="any"></div>
+      <div class="f" style="margin:0"><label>ไม้แก้สูงสุด</label><input type="number" id="maxlv" value="30" step="1" min="1"></div>
+    </div>
+    <div class="f row2">
+      <div class="f" style="margin:0"><label>Lot ไม้แรก</label><input type="number" id="lot0" value="0.01" step="any"></div>
+      <div class="f" style="margin:0"><label>ตัวคูณ Lot</label><input type="number" id="mult" value="1.30" step="any"></div>
+    </div>
+    <div class="f row2">
+      <div class="f" style="margin:0"><label>Lot step</label><input type="number" id="lotstep" value="0.01" step="any"></div>
+      <div class="f" style="margin:0"><label>Lot ต่ำสุด</label><input type="number" id="minlot" value="0.01" step="any"></div>
+    </div>
+    <p class="hint">ถ้านำเข้าไม้จริงจาก Sheet แล้ว ค่ากลุ่มนี้จะถูกใช้เฉพาะตอนคาดการณ์ว่ากริดจะออกไม้ต่ออย่างไรถ้าราคาไปไกลกว่าเดิม</p>
+  </div>
+
+  <div class="grp" style="border-bottom:0">
+    <h2>แหล่งข้อมูลไม้</h2>
+    <div class="f"><div class="seg" id="srcSeg">
+      <button type="button" data-src="sim" aria-pressed="true">จำลองกริด</button>
+      <button type="button" data-src="import" aria-pressed="false">ไม้จริงที่นำเข้า</button>
+    </div></div>
+    <button class="btn" id="run">คำนวณใหม่</button>
+  </div>
+
+</aside>
+
+<!-- ========== STAGE ========== -->
+<main class="stage">
+
+  <!-- instrument bar -->
+  <section class="bar" id="bar">
+    <div><div class="k">Equity</div><div class="v num" id="mEq">—</div><div class="s" id="mEqS">—</div></div>
+    <div><div class="k">Margin ที่ใช้</div><div class="v num" id="mMg">—</div><div class="s" id="mMgS">—</div></div>
+    <div><div class="k">Free Margin</div><div class="v num" id="mFm">—</div><div class="s" id="mFmS">—</div></div>
+    <div><div class="k">Margin Level</div><div class="v num" id="mLv">—</div><div class="lvlbar"><i id="mLvBar"></i></div></div>
+    <div><div class="k">Drawdown</div><div class="v num" id="mDd">—</div><div class="s" id="mDdS">—</div></div>
+  </section>
+
+  <!-- survival -->
+  <section class="sec">
+    <h3>ระยะรอดของพอร์ต</h3>
+    <p class="sub">ราคาต้องวิ่งสวนอีกเท่าไรพอร์ตถึงโดนบังคับปิด โดยนับรวมไม้แก้ที่กริดจะทยอยออกระหว่างทางแล้ว</p>
+    <div id="alerts"></div>
+    <div class="scen" id="scen"></div>
+    <div class="ladderwrap">
+      <div><svg id="ladder" viewBox="0 0 640 400" role="img" aria-label="แผนผังระดับราคาของกริดเทียบกับจุด stop out"></svg></div>
+      <div class="verdict">
+        <div class="cap">ทนได้อีก</div>
+        <div class="big num" id="vDist">—</div>
+        <div class="pct num" id="vPct">—</div>
+        <ul class="vlist">
+          <li><span>ราคา Stop Out</span><b id="vSo">—</b></li>
+          <li><span>ราคา Margin Call</span><b id="vMc">—</b></li>
+          <li><span>ไม้ทั้งหมดถึงจุดนั้น</span><b id="vN">—</b></li>
+          <li><span>Lot รวมถึงจุดนั้น</span><b id="vLots">—</b></li>
+          <li><span>ราคาคุ้มทุนของตะกร้า</span><b id="vBe">—</b></li>
+          <li><span>ต้นทุนถือต่อวัน</span><b id="vCarry">—</b></li>
+          <li><span>ทุนที่ควรมีเพื่อรอดถึงจุดนั้น</span><b id="vNeed">—</b></li>
+          <li><span>ต้องกำไรกี่ % ถึงกลับทุน</span><b id="vRec">—</b></li>
+        </ul>
+      </div>
+    </div>
+    <svg id="curve" viewBox="0 0 960 210" role="img" aria-label="กราฟ margin level เทียบกับราคา"></svg>
+  </section>
+
+  <!-- positions -->
+  <section class="sec">
+    <h3>รายไม้ในตะกร้า</h3>
+    <p class="sub" id="posSub">—</p>
+    <div class="scroll"><table class="tbl" id="posTbl">
+      <thead><tr>
+        <th>ไม้</th><th>ราคาเปิด</th><th>Lot</th><th>Lot สะสม</th><th>ระยะลาก</th>
+        <th>กำไร/ขาดทุน</th><th>Margin</th><th>Equity เมื่อราคาถึงไม้นี้</th><th>Margin Level ตอนนั้น</th>
+      </tr></thead><tbody id="posBody"></tbody>
+    </table></div>
+  </section>
+
+  <!-- import -->
+  <section class="sec">
+    <h3>นำเข้าไม้จริงจาก Google Sheets หรือ MT5</h3>
+    <p class="sub">ลากคลุมแถวใน Sheet แล้วกด Ctrl+C มาวางในช่องนี้ หรือเลือกไฟล์ CSV ที่ export ไว้</p>
+    <div class="imp">
+      <div>
+        <textarea id="paste" spellcheck="false" placeholder="Symbol	Type	Lots	Open Price
+USOUSD	buy	0.01	62.000
+USOUSD	buy	0.01	61.500
+USOUSD	buy	0.02	61.000"></textarea>
+        <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap">
+          <button class="btn" style="width:auto; padding:9px 20px" id="doImport">นำเข้าข้อมูล</button>
+          <button class="btn ghost" style="width:auto; padding:9px 18px" id="clearImport">ล้างข้อมูลที่นำเข้า</button>
+          <label class="btn ghost" style="width:auto; padding:9px 18px; text-align:center; cursor:pointer; margin:0">
+            เลือกไฟล์ CSV<input type="file" id="csv" accept=".csv,.tsv,.txt" hidden>
+          </label>
+        </div>
+        <p class="hint" id="impMsg" style="margin-top:10px">ยังไม่มีข้อมูลนำเข้า</p>
+      </div>
+      <div class="fmt">
+        <p style="margin:0 0 8px; color:var(--t2)">คอลัมน์ที่ระบบอ่านได้</p>
+        <p style="margin:0 0 6px"><code>symbol</code> ไม่บังคับ</p>
+        <p style="margin:0 0 6px"><code>type</code> buy / sell / ซื้อ / ขาย</p>
+        <p style="margin:0 0 6px"><code>lots</code> หรือ volume / ปริมาณ</p>
+        <p style="margin:0 0 6px"><code>price</code> หรือ open price / ราคาเปิด</p>
+        <p style="margin:12px 0 0">ถ้าไม่มีหัวตาราง ระบบจะอ่านตามลำดับ type, lots, price ให้อัตโนมัติ และจะข้ามแถวที่อ่านไม่ออก</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- live sync -->
+  <section class="sec">
+    <h3>ซิงค์ข้อมูลอัตโนมัติแบบเรียลไทม์</h3>
+    <p class="sub">ให้หน้านี้ดึงตารางเดิมซ้ำเองทุก ๆ กี่วินาทีก็ได้ ไม่ต้องคัดลอกมาวางใหม่</p>
+    <div class="sync" style="border-top:0; padding-top:0; margin-top:0">
+      <div>
+        <div class="f"><label>ลิงก์ CSV ที่เผยแพร่จาก Google Sheets</label>
+          <input type="text" id="syncUrl" placeholder="https://docs.google.com/spreadsheets/d/e/..../pub?gid=0&single=true&output=csv" style="font-size:11.5px"></div>
+        <div class="tools" style="margin-top:10px">
+          <div class="f" style="margin:0; width:130px"><label>ดึงทุก ๆ (วินาที)</label><input type="number" id="syncEvery" value="30" min="5" step="1"></div>
+          <button class="btn" id="syncNow" style="align-self:flex-end">ดึงเดี๋ยวนี้</button>
+          <button class="btn ghost" id="syncStart" style="align-self:flex-end">เริ่มดึงอัตโนมัติ</button>
+          <button class="btn ghost" id="syncStop" style="align-self:flex-end">หยุด</button>
+        </div>
+        <div class="tools" style="margin-top:12px">
+          <button class="btn ghost" id="watchFile">เฝ้าดูไฟล์ CSV ในเครื่อง</button>
+          <span class="hint">เลือกไฟล์ที่ Excel บันทึกทับเรื่อย ๆ แล้วหน้านี้จะอ่านใหม่เองทุกครั้งที่ไฟล์เปลี่ยน</span>
+        </div>
+        <p class="hint" id="syncMsg" style="margin-top:12px"><span class="dot"></span>ยังไม่ได้เชื่อมต่อ</p>
+      </div>
+      <div class="fmt">
+        <p style="margin:0 0 8px; color:var(--t2)">วิธีเผยแพร่ชีตเป็น CSV</p>
+        <p style="margin:0 0 6px">ใน Google Sheets เลือก <code>ไฟล์ → แชร์ → เผยแพร่บนเว็บ</code></p>
+        <p style="margin:0 0 6px">เลือกชีตที่ต้องการ แล้วเลือกรูปแบบ <code>CSV</code></p>
+        <p style="margin:0 0 6px">คัดลอกลิงก์ที่ได้มาวางในช่องซ้าย</p>
+        <p style="margin:12px 0 0">ถ้าใส่คอลัมน์ชื่อ <code>balance</code> และ <code>current</code> ไว้ในชีตด้วย ระบบจะอัปเดตทุนกับราคาปัจจุบันให้อัตโนมัติ</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- copy traders -->
+  <section class="sec">
+    <h3>พอร์ตผู้ก๊อปปี้เทรด</h3>
+    <p class="sub">แต่ละคนใช้ leverage ไม่เท่ากัน margin level จึงไม่เท่ากันแม้จะเปิดไม้เหมือนกันทุกประการ ตารางนี้บอกว่าใครจะโดนล้างพอร์ตก่อน</p>
+    <div class="tools" style="margin-bottom:16px">
+      <div class="f" style="margin:0; width:150px"><label>Lot step ของผู้ก๊อปปี้</label><input type="number" id="flotstep" value="0.0001" step="any"></div>
+      <div class="f" style="margin:0; width:150px"><label>Lot ต่ำสุดของผู้ก๊อปปี้</label><input type="number" id="fminlot" value="0.0001" step="any"></div>
+      <span class="hint" style="align-self:flex-end; padding-bottom:9px">บัญชีที่รับ lot ทศนิยม 4 หลักให้ใส่ 0.0001 ทั้งสองช่อง จะไม่มีการปัดเศษเลย</span>
+    </div>
+    <div class="fwhead"><span>ชื่อ</span><span>Balance</span><span>Leverage 1:</span><span>วิธีคิด lot</span><span></span></div>
+    <div id="fwList"></div>
+    <div style="display:flex; gap:10px; margin:12px 0 22px; flex-wrap:wrap">
+      <button class="btn ghost" style="width:auto; padding:8px 18px" id="addFw">เพิ่มผู้ก๊อปปี้</button>
+      <span class="hint" style="align-self:center">วิธีคิด lot: <b style="color:var(--t2)">ตามทุน</b> = ปรับตามสัดส่วน balance / <b style="color:var(--t2)">คูณคงที่</b> = ใส่ตัวคูณเอง</span>
+    </div>
+    <div id="fwAlert"></div>
+    <div class="scroll"><table class="tbl" id="fwTbl">
+      <thead><tr>
+        <th>พอร์ต</th><th>Balance</th><th>Lev</th><th>สัดส่วนที่ตั้งไว้</th><th>Lot รวม</th>
+        <th>lot จริง ÷ มาสเตอร์</th><th>ความเสี่ยงต่อทุน</th><th>Margin</th><th>Equity</th><th>Margin Level</th>
+        <th>DD</th><th>ราคา Stop Out</th><th>ทนได้อีก</th><th>สถานะ</th>
+      </tr></thead><tbody id="fwBody"></tbody>
+    </table></div>
+  </section>
+
+  <section class="sec">
+    <h3>บันทึกการตั้งค่า</h3>
+    <p class="sub">เก็บค่าทั้งหน้าไว้เป็นชุด เรียกกลับมาใช้ได้ทีหลัง หรือส่งออกเป็นไฟล์เพื่อย้ายเครื่อง</p>
+    <div class="tools">
+      <div class="f" style="margin:0; width:230px"><label>ชื่อชุดการตั้งค่า</label>
+        <input type="text" id="prName" placeholder="เช่น น้ำมัน กริดหลัก" style="font-family:var(--sans)"></div>
+      <button class="btn" id="prSave" style="align-self:flex-end">บันทึก</button>
+      <div class="f" style="margin:0; width:230px"><label>ชุดที่บันทึกไว้</label>
+        <select id="prList" style="font-family:var(--sans)"></select></div>
+      <button class="btn ghost" id="prLoad" style="align-self:flex-end">เรียกใช้</button>
+      <button class="btn ghost" id="prDel" style="align-self:flex-end">ลบ</button>
+    </div>
+    <div class="tools" style="margin-top:14px">
+      <button class="btn ghost" id="prExport">ส่งออกเป็นไฟล์</button>
+      <label class="btn ghost" style="cursor:pointer; margin:0">นำเข้าจากไฟล์<input type="file" id="prImport" accept=".json" hidden></label>
+      <label style="display:flex; align-items:center; gap:7px; font-size:12px; color:var(--t2); cursor:pointer">
+        <input type="checkbox" id="prAuto" checked style="width:auto"> จำค่าล่าสุดอัตโนมัติ
+      </label>
+      <span class="hint" id="prMsg"></span>
+    </div>
+  </section>
+
+  <p class="foot">
+    ตัวเลขทั้งหมดเป็นการประมาณจากสูตรมาตรฐานของ MT5 บัญชีแบบ hedging โดยรวม margin ทั้งฝั่ง buy และ sell
+    ค่าจริงอาจต่างไปตามโบรกเกอร์ เช่น margin แบบขั้นบันไดตามขนาดพอร์ต การขยาย spread ช่วงข่าว
+    การเลื่อน stop out ชั่วคราว และ swap ที่คิดสามเท่าในคืนวันพุธ
+    ผลลัพธ์นี้ใช้ประเมินความเสี่ยง ไม่ใช่คำแนะนำการลงทุน
+  </p>
+
+</main>
+</div>
+<script>
+'use strict';
+
+/* ============ symbol presets ============ */
+const SYMBOLS = {
+  'USOUSD.sc':{cs:1000, dg:3, entry:115.631, cur:100.102, step:1.00, lev:500, swap:7.2841, swapUnit:'points', lotstep:0.01, minlot:0.01},
+  USOUSD:{cs:1000, dg:3, entry:62.000, cur:58.500, step:0.50},
+  XAUUSD:{cs:100,  dg:2, entry:3400.00, cur:3280.00, step:8.00},
+  BTCUSD:{cs:1,    dg:2, entry:95000.00, cur:88000.00, step:900.00},
+  NAS100:{cs:1,    dg:2, entry:22000.00, cur:21200.00, step:90.00},
+  EURUSD:{cs:100000, dg:5, entry:1.09000, cur:1.07500, step:0.00300}
+};
+
+let DIR = 1;
+let SRC = 'sim';
+let IMPORTED = null;
+let FOLLOWERS = [
+  {name:'ผู้ติดตาม A', bal:10000, lev:100, mode:'cap', mult:1},
+  {name:'ผู้ติดตาม B', bal:5000,  lev:50,  mode:'cap', mult:1},
+  {name:'ผู้ติดตาม C', bal:2000,  lev:200, mode:'cap', mult:1}
+];
+
+const $ = id => document.getElementById(id);
+const N = id => parseFloat($(id).value) || 0;
+
+/* ============ formatting ============ */
+let DG = 3;
+const px  = v => (isFinite(v) ? v.toFixed(DG) : '—');
+const usd = v => (isFinite(v) ? (v<0?'-':'') + '$' + Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—');
+const usd0 = v => (isFinite(v) ? (v<0?'-':'') + '$' + Math.abs(v).toLocaleString('en-US',{maximumFractionDigits:0}) : '—');
+const pct = (v,d) => (isFinite(v) ? v.toFixed(d===undefined?1:d) + '%' : '—');
+let LOTDG = 2;
+const lotf = v => isFinite(v) ? v.toLocaleString('en-US',{minimumFractionDigits:LOTDG,maximumFractionDigits:LOTDG}) : '—';
+
+/* ============ config reader ============ */
+function cfg(){
+  const c = {
+    bal:Math.max(1,N('balance')), lev:Math.max(1,N('lev')), so:N('so'), mc:N('mc'),
+    basis:$('mbasis').value,
+    cs:N('cs'), dg:Math.round(N('dg')), days:N('days'), comm:N('comm'),
+    mmult:Math.max(0, N('mmult')) || 1,
+    entry:N('entry'), cur:N('cur'), step:Math.abs(N('step')) || 0.0001,
+    maxlv:Math.max(1,Math.round(N('maxlv'))), lot0:N('lot0'), mult:N('mult')||1,
+    lotstep:Math.abs(N('lotstep'))||0.01, minlot:Math.abs(N('minlot'))||0.01,
+    flotstep:Math.abs(N('flotstep'))||0.01, fminlot:Math.abs(N('fminlot'))||0.01,
+    dir:DIR
+  };
+  DG = c.dg;
+  LOTDG = Math.max(2, decimalsOf(c.lotstep), decimalsOf(c.flotstep));
+  // swap quoted in points converts through the point value of one lot
+  c.swap = $('swapUnit').value === 'points'
+    ? N('swap') * Math.pow(10, -c.dg) * c.cs
+    : N('swap');
+  c.nights = c.days + ($('triple').value === 'yes' ? Math.floor(c.days/7)*2 : 0);
+  return c;
+}
+function decimalsOf(x){
+  const t = String(x);
+  if (t.indexOf('e-')>0) return Math.min(8, parseInt(t.split('e-')[1],10));
+  const i = t.indexOf('.');
+  return i<0 ? 0 : Math.min(8, t.length-i-1);
+}
+function roundLot(v,c){
+  let x = Math.round(v / c.lotstep) * c.lotstep;
+  x = Math.max(x, c.minlot);
+  return Math.round(x * 1e8) / 1e8;
+}
+function roundLotF(v,c){
+  let x = Math.round(v / c.flotstep) * c.flotstep;
+  x = Math.max(x, c.fminlot);
+  return Math.round(x * 1e8) / 1e8;
+}
+
+/* ============ position builder ============
+   Returns the basket that exists once price has travelled to P.      */
+function buildPositions(P, c){
+  const out = [];
+  if (SRC === 'import' && IMPORTED && IMPORTED.length){
+    IMPORTED.forEach((p,i)=> out.push({price:p.price, lots:p.lots, dir:p.dir, level:i+1, real:true}));
+    // project further rungs beyond the worst existing entry
+    const same = IMPORTED.filter(p=>p.dir===c.dir);
+    if (same.length && out.length < c.maxlv){
+      const worst = c.dir===1 ? Math.min(...same.map(p=>p.price)) : Math.max(...same.map(p=>p.price));
+      let lastLot = same.find(p=>p.price===worst).lots;
+      let k = 1;
+      while (out.length < c.maxlv){
+        const rung = worst - c.dir*k*c.step;
+        const reached = c.dir===1 ? P <= rung : P >= rung;
+        if (!reached) break;
+        lastLot = lastLot * c.mult;
+        out.push({price:rung, lots:roundLot(lastLot,c), dir:c.dir, level:out.length+1, real:false});
+        k++;
+      }
+    }
+    return out;
+  }
+  const adverse = c.dir===1 ? (c.entry - P) : (P - c.entry);
+  let n = adverse >= 0 ? Math.floor(adverse / c.step) + 1 : 1;
+  n = Math.min(Math.max(n,1), c.maxlv);
+  let lot = c.lot0;
+  for (let i=0;i<n;i++){
+    out.push({price:c.entry - c.dir*i*c.step, lots:roundLot(lot,c), dir:c.dir, level:i+1, real:false});
+    lot *= c.mult;
+  }
+  return out;
+}
+
+/* ============ evaluation ============ */
+function evalAt(P, c, acct, scale){
+  const raw = buildPositions(P, c);
+  let float=0, margin=0, lots=0, wsum=0, clamped=0;
+  const rows = [];
+  for (const p of raw){
+    const want = p.lots*scale;
+    const L = scale===1 ? p.lots : roundLotF(want, c);
+    if (scale!==1 && want < c.fminlot - 1e-12) clamped++;
+    const pl = (P - p.price) * p.dir * L * c.cs;
+    const mb = (c.basis==='market' ? P : p.price);
+    const mg = L * c.cs * mb / acct.lev * c.mmult;
+    float += pl; margin += mg; lots += L; wsum += p.price * L;
+    rows.push({...p, lots:L, pl, mg});
+  }
+  const swapT = lots * c.swap * c.nights;     // negative swap = cost, positive = credit
+  const commT = lots * c.comm;
+  const equity = acct.bal + float + swapT - commT;
+  const free = equity - margin;
+  const level = margin > 0 ? equity/margin*100 : Infinity;
+  const be = lots>0 ? (wsum/lots) + (c.dir * (commT - swapT) / (lots*c.cs)) : NaN;
+  return {rows, float, margin, lots, swapT, commT, equity, free, level, be, clamped,
+          dd:(acct.bal-equity)/acct.bal*100};
+}
+
+/* ============ solver: price at which margin level hits target ============ */
+function solvePrice(target, c, acct, scale){
+  const start = c.cur;
+  let lo, hi;
+  if (c.dir === 1){ hi = start; lo = Math.max(0.000001, start*0.001); }
+  else { lo = start; hi = Math.max(start, c.entry) * 12; }
+  const f = P => evalAt(P, c, acct, scale).level - target;
+  if (f(start) <= 0) return {price:start, breached:true};
+  // coarse scan in the adverse direction
+  const STEPS = 800;
+  let prev = start, prevV = f(start), found = null;
+  for (let i=1;i<=STEPS;i++){
+    const P = c.dir===1 ? start - (start-lo)*(i/STEPS) : start + (hi-start)*(i/STEPS);
+    const v = f(P);
+    if (v <= 0){ found = [prev, P]; break; }
+    prev = P; prevV = v;
+  }
+  if (!found) return {price:NaN, breached:false, never:true};
+  let [a,b] = found;
+  for (let i=0;i<70;i++){
+    const m = (a+b)/2;
+    if (f(m) > 0) a = m; else b = m;
+  }
+  return {price:(a+b)/2, breached:false};
+}
+
+/* ============ master render ============ */
+
+function run(){
+  const c = cfg();
+  $('ctxSym').textContent = $('sym').value;
+  $('ctxCS').textContent = c.cs.toLocaleString('en-US');
+  $('ctxPx').textContent = px(c.cur);
+
+  const acct = {bal:c.bal, lev:c.lev};
+  const now = evalAt(c.cur, c, acct, 1);
+  $('ctxN').textContent = now.rows.length;
+
+  const so = solvePrice(c.so, c, acct, 1);
+  const mc = solvePrice(c.mc, c, acct, 1);
+
+  const deepP = so.never ? (c.entry - c.dir*(c.maxlv-1)*c.step) : so.price;
+  const deep = evalAt(deepP, c, acct, 1);
+
+  renderBar(c, now);
+  renderVerdict(c, acct, now, so, mc);
+  renderLadder(c, deep, so, mc);
+  renderCurve(c, acct, so);
+  renderPositions(c, acct, now, deep);
+  renderFollowers(c, acct, now, so);
+  $('fwList').querySelectorAll('.ratio[data-i]').forEach(el=>{
+    const f = FOLLOWERS[+el.dataset.i]; if (f) el.textContent = (f.bal/c.bal).toFixed(3)+'×';
+  });
+  if ($('prAuto').checked) saveLast();
+  renderScenarios(c);
+  renderAlerts(c, now, so);
+}
+
+/* ---- instrument bar ---- */
+function renderBar(c, s){
+  $('mEq').textContent = usd(s.equity);
+  $('mEq').className = 'v num ' + (s.equity < c.bal ? 'dg' : 'ok');
+  $('mEqS').textContent = 'ลอยตัว ' + usd(s.float) + (c.days>0||c.comm>0 ? ' · ต้นทุน ' + usd(s.swapT - s.commT) : '');
+
+  $('mMg').textContent = usd(s.margin);
+  const mx = c.mmult!==1 ? ` × ${c.mmult}` : '';
+  $('mMgS').textContent = c.basis==='market'
+    ? `${lotf(s.lots)} × ${c.cs.toLocaleString('en-US')} × ${px(c.cur)} ÷ ${c.lev}${mx}`
+    : `${lotf(s.lots)} lot · คิดจากราคาเปิดแต่ละไม้ ÷ ${c.lev}${mx}`;
+
+  $('mFm').textContent = usd(s.free);
+  $('mFm').className = 'v num ' + (s.free < 0 ? 'cr' : s.free < c.bal*0.2 ? 'wr' : '');
+  $('mFmS').textContent = s.free<0 ? 'ติดลบ เปิดไม้ใหม่ไม่ได้' : 'เหลือ ' + pct(s.free/c.bal*100) + ' ของทุน';
+
+  const lv = s.level;
+  const cls = !isFinite(lv) ? '' : lv <= c.so ? 'cr' : lv <= c.mc ? 'dg' : lv < 300 ? 'wr' : 'ok';
+  $('mLv').textContent = isFinite(lv) ? lv.toLocaleString('en-US',{maximumFractionDigits:0})+'%' : '∞';
+  $('mLv').className = 'v num ' + cls;
+  const w = isFinite(lv) ? Math.max(1.5, Math.min(100, Math.log10(Math.max(lv,1))/Math.log10(3000)*100)) : 100;
+  const col = cls==='cr'?'var(--critical)':cls==='dg'?'var(--danger)':cls==='wr'?'var(--warn)':'var(--safe)';
+  $('mLvBar').style.width = w+'%'; $('mLvBar').style.background = col;
+
+  $('mDd').textContent = pct(Math.max(0,s.dd), 2);
+  $('mDd').className = 'v num ' + (s.dd>=30?'cr':s.dd>=15?'dg':s.dd>=5?'wr':'ok');
+  $('mDdS').textContent = 'ขาดทุนลอยตัว ' + usd(Math.min(0,s.float));
+}
+
+/* ---- verdict ---- */
+function renderVerdict(c, acct, s, so, mc){
+  const dist = so.never ? Infinity : so.breached ? 0 : Math.abs(c.cur - so.price);
+  $('vDist').textContent = so.never ? 'ไม่ถึง' : px(dist);
+  $('vDist').className = 'big num ' + (so.never?'ok':so.breached?'cr':dist/c.cur<0.08?'dg':dist/c.cur<0.2?'wr':'ok');
+  $('vPct').textContent = so.never ? 'ราคาไปสุดทางแล้วยังไม่โดนล้าง' :
+    so.breached ? 'พอร์ตถึงจุด stop out แล้ว' : pct(dist/c.cur*100,2) + ' จากราคาปัจจุบัน';
+
+  $('vSo').textContent = so.never ? '—' : px(so.price);
+  $('vSo').className = so.never ? 'dim' : 'cr';
+  $('vMc').textContent = mc.never ? '—' : px(mc.price);
+  $('vMc').className = mc.never ? 'dim' : 'wr';
+
+  const atSo = so.never ? null : evalAt(so.price, c, acct, 1);
+  $('vN').textContent = atSo ? atSo.rows.length + ' ไม้' : '—';
+  $('vLots').textContent = atSo ? lotf(atSo.lots) : '—';
+  $('vBe').textContent = isFinite(s.be) ? px(s.be) : '—';
+
+  const carry = s.lots * c.swap;
+  $('vCarry').textContent = c.swap===0 ? 'ยังไม่ใส่ swap' : usd(carry) + ' /คืน' + (c.nights>c.days ? ` · รวม ${c.nights} คืน` : '');
+  $('vCarry').className = c.swap===0 ? 'dim' : carry<0 ? 'wr' : 'ok';
+
+  // capital needed for the grid to fill completely without a stop out
+  const pFull = c.entry - c.dir * c.maxlv * c.step;
+  const probe = evalAt(pFull, c, {bal:0, lev:c.lev}, 1);
+  const need = (c.so/100)*probe.margin - (probe.float + probe.swapT - probe.commT);
+  $('vNeed').textContent = usd0(Math.max(0,need)) + '  (ครบ ' + c.maxlv + ' ไม้)';
+  $('vNeed').className = need > c.bal ? 'dg' : 'ok';
+
+  const dd = Math.max(0, s.dd)/100;
+  $('vRec').textContent = dd<=0 ? '—' : dd>=1 ? 'กู้ไม่ได้' : pct(dd/(1-dd)*100,2);
+  $('vRec').className = dd>=0.25 ? 'dg' : dd>=0.1 ? 'wr' : '';
+}
+
+/* ---- ladder ---- */
+function renderLadder(c, s, so, mc){
+  const W=640, H=400, padT=22, padB=26, x0=104;
+  const rows = s.rows;
+  const prices = rows.map(r=>r.price);
+  const pool = [c.entry, c.cur, ...prices];
+  if (!so.never) pool.push(so.price);
+  if (!mc.never) pool.push(mc.price);
+  let hi = Math.max(...pool), lo = Math.min(...pool);
+  const padP = Math.max((hi-lo)*0.10, c.step*1.2);
+  hi += padP; lo -= padP; if (lo<0 && c.entry>0) lo = Math.max(0, lo);
+  const y = p => padT + (hi-p)/(hi-lo) * (H-padT-padB);
+  const maxLot = Math.max(...rows.map(r=>r.lots), 0.01);
+  const barMax = W - x0 - 120;
+
+  let g = '';
+  // danger zone
+  if (!so.never){
+    const ys = y(so.price);
+    const top = c.dir===1 ? ys : padT, ht = c.dir===1 ? (H-padB-ys) : (ys-padT);
+    if (ht>0) g += `<rect x="${x0-14}" y="${top}" width="${W-x0+14}" height="${ht}" fill="var(--critical)" opacity="0.10"/>`;
+  }
+  // spine
+  g += `<line x1="${x0}" y1="${padT}" x2="${x0}" y2="${H-padB}" stroke="var(--line)" stroke-width="1"/>`;
+
+  // rungs
+  const n = rows.length, everyN = n>18 ? Math.ceil(n/14) : 1;
+  rows.forEach((r,i)=>{
+    const yy = y(r.price);
+    const w = Math.max(3, (r.lots/maxLot) * barMax);
+    const live = (c.dir===1 ? c.cur <= r.price : c.cur >= r.price);
+    g += `<rect x="${x0}" y="${yy-3.2}" width="${w}" height="6.4" rx="1"
+            fill="${live?'var(--accent)':'var(--line)'}" opacity="${live?0.75:0.5}"/>`;
+    if (i%everyN===0 || i===n-1){
+      g += `<text x="${x0-10}" y="${yy+3.6}" text-anchor="end" fill="var(--t3)" font-size="10.5">${r.price.toFixed(DG)}</text>`;
+      g += `<text x="${x0+w+8}" y="${yy+3.6}" fill="var(--t3)" font-size="10.5">${lotf(r.lots)}</text>`;
+    }
+  });
+
+  const rule = (p,color,label,dash,bold)=>{
+    const yy = y(p);
+    return `<line x1="${x0-14}" y1="${yy}" x2="${W-8}" y2="${yy}" stroke="${color}" stroke-width="${bold?1.6:1}" ${dash?'stroke-dasharray="4 3"':''}/>
+            <text x="${W-8}" y="${yy-7}" text-anchor="end" fill="${color}" font-size="11" class="s" font-weight="500">${label}</text>`;
+  };
+  if (!mc.never) g += rule(mc.price,'var(--warn)','Margin Call '+px(mc.price),true,false);
+  if (!so.never) g += rule(so.price,'var(--critical)','Stop Out '+px(so.price),false,true);
+
+  // current price marker
+  const yc = y(c.cur);
+  g += `<line x1="${x0-14}" y1="${yc}" x2="${W-8}" y2="${yc}" stroke="var(--t1)" stroke-width="1.4"/>
+        <polygon points="${x0-14},${yc} ${x0-22},${yc-5} ${x0-22},${yc+5}" fill="var(--t1)"/>
+        <text x="${W-8}" y="${yc-7}" text-anchor="end" fill="var(--t1)" font-size="11.5" class="s" font-weight="600">ราคาปัจจุบัน ${px(c.cur)}</text>`;
+
+  // entry marker
+  const ye = y(c.entry);
+  g += `<circle cx="${x0}" cy="${ye}" r="3.5" fill="var(--safe)"/>
+        <text x="${x0+barMax+52}" y="${ye+3.6}" fill="var(--safe)" font-size="10.5" class="s">ไม้แรก</text>`;
+
+  $('ladder').setAttribute('viewBox',`0 0 ${W} ${H}`);
+  $('ladder').innerHTML = g;
+}
+
+/* ---- margin level curve ---- */
+function renderCurve(c, acct, so){
+  const W=960, H=210, padL=52, padR=14, padT=14, padB=26;
+  let a, b;
+  if (c.dir===1){ b = c.entry + c.step*2; a = so.never ? c.cur*0.7 : so.price - Math.abs(c.cur-so.price)*0.25; a = Math.max(a, 0.0001); }
+  else { a = c.entry - c.step*2; b = so.never ? c.cur*1.3 : so.price + Math.abs(so.price-c.cur)*0.25; }
+  const X = p => padL + (p-a)/(b-a)*(W-padL-padR);
+  const LMIN=5, LMAX=5000;
+  const Y = l => { const v=Math.min(LMAX,Math.max(LMIN,l)); return padT + (1 - (Math.log10(v)-Math.log10(LMIN))/(Math.log10(LMAX)-Math.log10(LMIN)))*(H-padT-padB); };
+
+  let pts=[], SN=240;
+  for (let i=0;i<=SN;i++){
+    const p = a + (b-a)*(i/SN);
+    const r = evalAt(p, c, acct, 1);
+    pts.push([X(p), Y(isFinite(r.level)?r.level:LMAX)]);
+  }
+  let g='';
+  [10,50,100,500,1000].forEach(l=>{
+    const yy=Y(l);
+    g += `<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="var(--soft)" stroke-width="1"/>
+          <text x="${padL-8}" y="${yy+3.5}" text-anchor="end" fill="var(--t3)" font-size="10">${l}%</text>`;
+  });
+  const ySo = Y(c.so);
+  g += `<line x1="${padL}" y1="${ySo}" x2="${W-padR}" y2="${ySo}" stroke="var(--critical)" stroke-width="1" stroke-dasharray="5 4"/>
+        <text x="${W-padR}" y="${ySo-6}" text-anchor="end" fill="var(--critical)" font-size="10.5" class="s">stop out ${c.so}%</text>`;
+  g += `<polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="1.8"/>`;
+  const xc = X(c.cur);
+  g += `<line x1="${xc}" y1="${padT}" x2="${xc}" y2="${H-padB}" stroke="var(--t1)" stroke-width="1"/>
+        <text x="${xc+6}" y="${padT+11}" fill="var(--t1)" font-size="10.5">${px(c.cur)}</text>`;
+  [a, (a+b)/2, b].forEach(p=>{
+    g += `<text x="${X(p)}" y="${H-8}" text-anchor="middle" fill="var(--t3)" font-size="10">${p.toFixed(DG)}</text>`;
+  });
+  $('curve').innerHTML = g;
+}
+
+/* ---- positions table ---- */
+function renderPositions(c, acct, s, deep){
+  const src = SRC==='import' && IMPORTED && IMPORTED.length
+    ? `นำเข้า ${IMPORTED.length} ไม้จริงจาก Sheet` : 'จำลองจากพารามิเตอร์กริด';
+  $('posSub').textContent = `${src} · เปิดแล้ว ${s.rows.length} ไม้ (${lotf(s.lots)} lot) · ตารางนี้ไล่ต่อไปจนถึงจุด stop out รวม ${deep.rows.length} ไม้ (${lotf(deep.lots)} lot)`;
+  let h='', cum=0;
+  deep.rows.forEach(r=>{
+    cum += r.lots;
+    const live = c.dir===1 ? c.cur <= r.price : c.cur >= r.price;
+    const at = evalAt(r.price, c, acct, 1);
+    const lvl = at.level;
+    const cls = !isFinite(lvl)?'':lvl<=c.so?'cr':lvl<=c.mc?'dg':lvl<300?'wr':'';
+    const pl = live ? (c.cur - r.price)*r.dir*r.lots*c.cs : NaN;
+    const mg = live ? r.lots*c.cs*(c.basis==='market'?c.cur:r.price)/acct.lev : NaN;
+    h += `<tr${live?'':' style="opacity:.62"'}>
+      <td class="tx">${r.level} ${live?'<span class="tag ok">เปิดแล้ว</span>':'<span class="dim">คาดการณ์</span>'}</td>
+      <td>${px(r.price)}</td><td>${lotf(r.lots)}</td><td class="dim">${lotf(cum)}</td>
+      <td class="dim">${live?px(Math.abs(c.cur-r.price)):'—'}</td>
+      <td class="${live?(pl<0?'dg':'ok'):'dim'}">${live?usd(pl):'—'}</td>
+      <td class="dim">${live?usd(mg):'—'}</td>
+      <td>${usd(at.equity)}</td>
+      <td class="${cls}">${isFinite(lvl)?lvl.toLocaleString('en-US',{maximumFractionDigits:0})+'%':'∞'}</td>
+    </tr>`;
+  });
+  $('posBody').innerHTML = h || '<tr><td colspan="9" class="tx dim">ยังไม่มีไม้</td></tr>';
+}
+
+/* ---- followers ---- */
+function renderFollowerInputs(){
+  const mb = Math.max(1, parseFloat($('balance').value)||1);
+  $('fwList').innerHTML = FOLLOWERS.map((f,i)=>{
+    const right = f.mode==='cap'
+      ? `<div class="ratio" data-i="${i}" title="คำนวณจากสัดส่วน balance โดยอัตโนมัติ">${(f.bal/mb).toFixed(3)}×</div>`
+      : `<input type="number" value="${f.mult}" data-i="${i}" data-k="mult" step="any" title="คูณ lot ของมาสเตอร์กี่เท่า">`;
+    return `<div class="fw">
+      <input type="text" value="${String(f.name).replace(/"/g,'&quot;')}" data-i="${i}" data-k="name" style="font-family:var(--sans)">
+      <input type="number" value="${f.bal}" data-i="${i}" data-k="bal" step="any">
+      <input type="number" value="${f.lev}" data-i="${i}" data-k="lev" step="any">
+      <div class="modecell">
+        <select data-i="${i}" data-k="mode"><option value="cap"${f.mode==='cap'?' selected':''}>ตามทุน</option><option value="fix"${f.mode==='fix'?' selected':''}>คูณคงที่</option></select>
+        ${right}
+      </div>
+      <button class="x" data-del="${i}" aria-label="ลบ">×</button>
+    </div>`;
+  }).join('');
+}
+
+function renderFollowers(c, macct, mnow, mso){
+  let h='', weakest=null, ampl=[];
+  const mRisk = mnow.lots / c.bal;
+
+  // master row for reference
+  const msoTxt = mso.never ? 'ไม่ถึง' : px(mso.price);
+  h += `<tr class="me"><td class="tx">มาสเตอร์</td><td>${usd0(c.bal)}</td><td>1:${c.lev}</td>
+        <td class="dim">1.000×</td><td>${lotf(mnow.lots)}</td><td class="dim">1.00×</td><td class="dim">1.00×</td>
+        <td>${usd(mnow.margin)}</td><td>${usd(mnow.equity)}</td>
+        <td>${isFinite(mnow.level)?mnow.level.toFixed(0)+'%':'∞'}</td>
+        <td>${pct(Math.max(0,mnow.dd),1)}</td><td class="cr">${msoTxt}</td>
+        <td>${mso.never?'—':px(Math.abs(c.cur-mso.price))}</td>
+        <td class="tx"><span class="tag ok">อ้างอิง</span></td></tr>`;
+
+  FOLLOWERS.forEach(f=>{
+    const scale = f.mode==='cap' ? (f.bal / c.bal) : f.mult;
+    const acct = {bal:f.bal, lev:Math.max(1,f.lev)};
+    const r = evalAt(c.cur, c, acct, scale);
+    const so = solvePrice(c.so, c, acct, scale);
+    const risk = (r.lots / f.bal) / mRisk;     // lot per unit capital vs master
+    const dist = so.never ? Infinity : Math.abs(c.cur - so.price);
+    const mdist = mso.never ? Infinity : Math.abs(c.cur - mso.price);
+
+    const lotRatio = mnow.lots>0 ? r.lots/mnow.lots : NaN;
+    let tag, tcls;
+    if (r.level <= c.so){ tag='ล้างพอร์ตแล้ว'; tcls='cr'; }
+    else if (r.level <= c.mc){ tag='Margin Call'; tcls='dg'; }
+    else if (dist < mdist*0.9){ tag='ตายก่อนมาสเตอร์'; tcls='dg'; }
+    else if (risk > 1.15){ tag='เสี่ยงเกินสัดส่วน'; tcls='wr'; }
+    else if (r.level < 300){ tag='เฝ้าระวัง'; tcls='wr'; }
+    else { tag='ปกติ'; tcls='ok'; }
+
+    if (dist < mdist*0.98 && (!weakest || dist < weakest.d)) weakest = {name:f.name, d:dist, p:so.price};
+    if (risk > 1.15) ampl.push({name:f.name, risk, scale, lr:lotRatio, clamped:r.clamped});
+
+    const lcls = r.level<=c.so?'cr':r.level<=c.mc?'dg':r.level<300?'wr':'';
+    h += `<tr>
+      <td class="tx">${f.name}</td><td>${usd0(f.bal)}</td><td>1:${f.lev}</td>
+      <td class="dim">${scale.toFixed(3)}×</td><td>${lotf(r.lots)}</td>
+      <td class="${r.clamped?'wr':'dim'}">${lotRatio.toFixed(2)}×${r.clamped?'<span class="clamp" title="ไม้ '+r.clamped+' ไม้ถูกปัดขึ้นเป็น lot ขั้นต่ำ">▲</span>':''}</td>
+      <td class="${risk>1.15?'wr':'dim'}">${risk.toFixed(2)}×</td>
+      <td class="dim">${usd(r.margin)}</td><td>${usd(r.equity)}</td>
+      <td class="${lcls}">${isFinite(r.level)?r.level.toLocaleString('en-US',{maximumFractionDigits:0})+'%':'∞'}</td>
+      <td class="${r.dd>=15?'dg':r.dd>=5?'wr':''}">${pct(Math.max(0,r.dd),1)}</td>
+      <td class="cr">${so.never?'ไม่ถึง':px(so.price)}</td>
+      <td>${so.never?'—':px(dist)}</td>
+      <td class="tx"><span class="tag ${tcls}">${tag}</span></td></tr>`;
+  });
+  $('fwBody').innerHTML = h;
+
+  let a='';
+  if (weakest) a += `<div class="alert dgr"><span class="ico">!</span><div>
+    <b>${weakest.name}</b> จะโดนบังคับปิดที่ราคา <b class="num">${px(weakest.p)}</b> ซึ่งเกิดก่อนพอร์ตมาสเตอร์
+    ถ้าคุณวางแผนการถอนกริดโดยดูจาก margin level ของพอร์ตตัวเองอย่างเดียว ผู้ติดตามกลุ่มนี้จะถูกล้างไปก่อนที่คุณจะรู้ตัว</div></div>`;
+  if (ampl.length){
+    const cl = ampl.filter(x=>x.clamped);
+    a += `<div class="alert"><span class="ico">!</span><div>
+      ${ampl.map(x=>`<b>${x.name}</b> ตั้งสัดส่วนไว้ ${x.scale.toFixed(3)}× แต่ได้ lot จริง ${x.lr.toFixed(2)}× ของมาสเตอร์ จึงรับความเสี่ยงต่อทุน ${x.risk.toFixed(2)} เท่า`).join('<br>')}
+      ${cl.length?`<br>สาเหตุคือ lot ที่คำนวณได้ต่ำกว่าขั้นต่ำ ${c.fminlot} lot แล้วถูกปัดขึ้น การย่อสัดส่วนจึงไม่เกิดผลเลย ทุนยิ่งน้อยยิ่งโดนหนัก
+      ทางแก้คือกำหนดทุนขั้นต่ำในการเข้าร่วม หรือเพิ่ม lot ไม้แรกของมาสเตอร์ให้มีที่ว่างให้ย่อ`:''}</div></div>`;
+  }
+  $('fwAlert').innerHTML = a;
+}
+
+/* ---- scenarios ---- */
+function renderScenarios(c){
+  const mk = [];
+  [2,5,10,20,30].forEach(p=>{
+    const t = c.entry * (1 - c.dir*p/100);
+    mk.push({label:`สวน ${p}%`, v:t});
+  });
+  mk.push({label:'ไม้สุดท้ายของกริด', v:c.entry - c.dir*(c.maxlv-1)*c.step});
+  mk.push({label:'กลับมาที่ราคาไม้แรก', v:c.entry});
+  $('scen').innerHTML = mk.map(m=>`<button type="button" data-px="${m.v}">${m.label} · ${m.v.toFixed(DG)}</button>`).join('');
+}
+
+/* ---- alerts ---- */
+function renderAlerts(c, s, so){
+  let a='';
+  if (c.so <= 0) a += `<div class="alert dgr"><span class="ico">!</span><div>
+    ช่อง Stop Out ตั้งไว้ที่ 0% ระบบจึงหาราคาที่โดนบังคับปิดไม่เจอและขึ้นว่าไม่ถึงตลอด
+    ใส่ระดับจริงของโบรกเกอร์ลงไป ค่าที่พบบ่อยคือ 20% ถึง 50% ดูได้จากหน้าเงื่อนไขบัญชีของ PU Prime</div></div>`;
+  if (s.level <= c.so) a += `<div class="alert dgr"><span class="ico">!</span><div>
+    Margin level อยู่ที่ <b class="num">${s.level.toFixed(0)}%</b> ต่ำกว่าระดับ stop out ที่ตั้งไว้ พอร์ตนี้ถือว่าถูกบังคับปิดแล้ว</div></div>`;
+  else if (s.level <= c.mc) a += `<div class="alert dgr"><span class="ico">!</span><div>
+    Margin level <b class="num">${s.level.toFixed(0)}%</b> เข้าเขต margin call แล้ว โบรกเกอร์จะไม่ให้เปิดไม้ใหม่ และกริดจะหยุดออกไม้แก้เอง
+    ซึ่งแปลว่าแผนการเฉลี่ยต้นทุนจะหยุดทำงานตรงนี้</div></div>`;
+  else if (!so.never && !so.breached){
+    const d = Math.abs(c.cur - so.price)/c.cur*100;
+    if (d < 8) a += `<div class="alert dgr"><span class="ico">!</span><div>
+      เหลือระยะถึง stop out แค่ <b class="num">${d.toFixed(2)}%</b> ของราคา ระยะขนาดนี้ข่าวแรงคืนเดียวก็ถึงได้</div></div>`;
+    else if (d < 18) a += `<div class="alert"><span class="ico">!</span><div>
+      ระยะถึง stop out อยู่ที่ <b class="num">${d.toFixed(2)}%</b> ถือว่าบางสำหรับกลยุทธ์กริดที่ไม่มี stop loss</div></div>`;
+  }
+  const carryTotal = Math.abs(Math.min(0, s.lots * c.swap * c.days));
+  if (carryTotal > c.bal*0.03) a += `<div class="alert"><span class="ico">!</span><div>
+    ค่า swap สะสม <b class="num">${usd(carryTotal)}</b> คิดเป็น ${pct(carryTotal/c.bal*100,2)} ของทุน
+    ตะกร้าที่ถือยาวจะถูกต้นทุนตัวนี้กัดไปเรื่อย ๆ แม้ราคาไม่ได้วิ่งสวน</div></div>`;
+  if (c.mult > 1.6) a += `<div class="alert"><span class="ico">!</span><div>
+    ตัวคูณ lot <b class="num">${c.mult}</b> สูงมาก ไม้ที่ ${c.maxlv} จะมีขนาดราว
+    <b class="num">${lotf(roundLot(c.lot0*Math.pow(c.mult,c.maxlv-1),c))} lot</b> ลองกดดูช่องทุนที่ต้องมีให้กริดเดินครบด้านขวา</div></div>`;
+  $('alerts').innerHTML = a;
+}
+
+/* ============ import parser ============ */
+const HEAD = {
+  type:['type','ชนิด','ประเภท','side','direction','order'],
+  lots:['lots','lot','volume','size','ปริมาณ','vol'],
+  price:['price','open price','openprice','entry','ราคาเปิด','ราคา','open'],
+  sym:['symbol','instrument','สินค้า','คู่เงิน'],
+  bal:['balance','ทุน','ยอดเงิน','เงินทุน'],
+  cur:['current','current price','market','bid','last','ราคาปัจจุบัน','ราคาตลาด']
+};
+function parseTable(text){
+  const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length);
+  if (!lines.length) return {rows:[], err:'ไม่พบข้อมูล'};
+  const delim = lines[0].includes('\t') ? '\t' : (lines[0].split(',').length > lines[0].split(';').length ? ',' : ';');
+  const cells = lines.map(l=>l.split(delim).map(s=>s.trim().replace(/^"|"$/g,'')));
+  let map=null, start=0;
+  const h0 = cells[0].map(s=>s.toLowerCase());
+  const looksHeader = h0.some(s => Object.values(HEAD).flat().includes(s));
+  if (looksHeader){
+    map={};
+    h0.forEach((s,i)=>{ for (const k in HEAD) if (HEAD[k].includes(s)) map[k]=i; });
+    start=1;
+  }
+  const num = s => { const v = parseFloat(String(s).replace(/[^0-9.\-]/g,'')); return isFinite(v)?v:NaN; };
+  const rows=[]; let skipped=0;
+  for (let i=start;i<cells.length;i++){
+    const r = cells[i]; let t,l,p;
+    if (map && map.lots!==undefined && map.price!==undefined){
+      t = map.type!==undefined ? r[map.type] : '';
+      l = num(r[map.lots]); p = num(r[map.price]);
+    } else {
+      const nums = r.map(num).map((v,idx)=>({v,idx})).filter(o=>isFinite(o.v));
+      const tcell = r.find(x=>/buy|sell|ซื้อ|ขาย|long|short/i.test(x));
+      t = tcell || '';
+      if (nums.length < 2){ skipped++; continue; }
+      // lots = smallest plausible, price = largest-magnitude remaining
+      const sorted=[...nums].sort((a,b)=>a.v-b.v);
+      l = sorted[0].v; p = sorted[sorted.length-1].v;
+    }
+    if (!isFinite(l) || !isFinite(p) || l<=0 || p<=0){ skipped++; continue; }
+    const dir = /sell|ขาย|short/i.test(String(t)) ? -1 : 1;
+    rows.push({lots:l, price:p, dir});
+  }
+  let extra = {};
+  if (map){
+    const pick = k => {
+      if (map[k]===undefined) return NaN;
+      for (let i=start;i<cells.length;i++){ const v = num(cells[i][map[k]]); if (isFinite(v) && v!==0) return v; }
+      return NaN;
+    };
+    extra = {bal:pick('bal'), cur:pick('cur')};
+  }
+  return {rows, skipped, extra};
+}
+
+function applyImport(text, live){
+  const {rows, skipped, err, extra} = parseTable(text);
+  if (err || !rows.length){
+    const m = '<span class="dg">อ่านข้อมูลไม่ได้ ตรวจว่ามีคอลัมน์ lot และราคาเปิดครบ</span>';
+    if (live) syncMsg(m, 'err'); else $('impMsg').innerHTML = m;
+    return false;
+  }
+  if (extra){
+    if (isFinite(extra.bal)) $('balance').value = extra.bal;
+    if (isFinite(extra.cur)) $('cur').value = extra.cur;
+  }
+  IMPORTED = rows.sort((a,b)=> b.price - a.price);
+  const c = cfg();
+  const lots = rows.reduce((s,r)=>s+r.lots,0);
+  const sells = rows.filter(r=>r.dir===-1).length;
+  // adopt the imported basket's own geometry
+  setDir(sells > rows.length/2 ? -1 : 1);
+  $('entry').value = (DIR===1 ? Math.max(...rows.map(r=>r.price)) : Math.min(...rows.map(r=>r.price))).toFixed(c.dg);
+  $('lot0').value = rows[DIR===1?0:rows.length-1].lots;
+  if (!live && rows.length>1){
+    const gaps=[]; for (let i=1;i<rows.length;i++) gaps.push(Math.abs(rows[i].price-rows[i-1].price));
+    const med = gaps.sort((a,b)=>a-b)[Math.floor(gaps.length/2)];
+    if (med>0) $('step').value = med.toFixed(c.dg);
+    const first = rows[DIR===1?0:rows.length-1].lots, last = rows[DIR===1?rows.length-1:0].lots;
+    if (first>0 && last>0 && rows.length>1) $('mult').value = Math.pow(last/first, 1/(rows.length-1)).toFixed(3);
+  }
+  setSrc('import');
+  if (live){
+    syncMsg(`อัปเดตล่าสุด ${new Date().toLocaleTimeString('th-TH')} · ${rows.length} ไม้ · ${lotf(lots)} lot`, 'live');
+    run(); return true;
+  }
+  $('impMsg').innerHTML = `<span class="ok">นำเข้าแล้ว ${rows.length} ไม้ · รวม ${lotf(lots)} lot</span>` +
+    (skipped ? ` <span class="dim">· ข้าม ${skipped} แถวที่อ่านไม่ออก</span>` : '') +
+    ` <span class="dim">· ระบบเดา step และตัวคูณให้จากข้อมูลจริงแล้ว แก้ได้ที่แถบซ้าย</span>`;
+  run();
+  return true;
+}
+
+/* ============ wiring ============ */
+function setDir(d){
+  DIR = d;
+  document.querySelectorAll('#dirSeg button').forEach(b=>b.setAttribute('aria-pressed', String(+b.dataset.dir===d)));
+}
+function setSrc(s){
+  SRC = s;
+  document.querySelectorAll('#srcSeg button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.src===s)));
+}
+
+document.querySelectorAll('#dirSeg button').forEach(b=>b.onclick=()=>{setDir(+b.dataset.dir); run();});
+document.querySelectorAll('#srcSeg button').forEach(b=>b.onclick=()=>{
+  if (b.dataset.src==='import' && (!IMPORTED || !IMPORTED.length)){
+    $('impMsg').innerHTML = '<span class="wr">ยังไม่มีข้อมูลนำเข้า วางข้อมูลจาก Sheet ในช่องด้านล่างก่อน</span>';
+    $('paste').focus(); return;
+  }
+  setSrc(b.dataset.src); run();
+});
+
+$('sym').onchange = e=>{
+  const s = SYMBOLS[e.target.value];
+  if (s){
+    $('cs').value=s.cs; $('dg').value=s.dg; $('entry').value=s.entry.toFixed(s.dg);
+    $('cur').value=s.cur.toFixed(s.dg); $('step').value=s.step.toFixed(s.dg);
+    if (s.lev) $('lev').value=s.lev;
+    if (s.swap!==undefined) $('swap').value=s.swap;
+    if (s.swapUnit) $('swapUnit').value=s.swapUnit;
+    if (s.lotstep) $('lotstep').value=s.lotstep;
+    if (s.minlot) $('minlot').value=s.minlot;
+  }
+  run();
+};
+$('calBtn').onclick = ()=>{
+  const c = cfg();
+  const M = Math.abs(parseFloat($('calMg').value)||0);
+  const L = Math.abs(parseFloat($('calLot').value)||0);
+  if (M<=0 || L<=0){ $('calMsg').innerHTML='<span class="wr">ใส่ทั้ง Margin และ Lot รวมที่เห็นใน MT5 ก่อน</span>'; return; }
+  const notional = L * c.cs * c.cur;
+  const expect = notional / c.lev;
+  const mult = M / expect;
+  $('mbasis').value = 'market';
+  $('mmult').value = (Math.round(mult*1000)/1000);
+  const near1 = Math.abs(mult-1) < 0.02;
+  $('calMsg').innerHTML = near1
+    ? `<span class="ok">ตรงกับสูตรพอดี โบรกเกอร์คิด margin ตาม leverage 1:${c.lev} ไม่มีส่วนเพิ่ม</span>`
+    : `<span class="wr">โบรกเกอร์เก็บ margin มากกว่าสูตร ${mult.toFixed(3)} เท่า</span>
+       <span class="dim">สูตรที่ leverage 1:${c.lev} ให้ ${expect.toFixed(2)} แต่เก็บจริง ${M.toFixed(2)} เท่ากับ ${(M/L).toFixed(2)} ต่อ 1 lot
+       หรือ ${(M/notional*100).toFixed(4)}% ของมูลค่าสัญญา ตั้งตัวคูณให้แล้ว
+       ส่วนเพิ่มแบบนี้มักเป็น margin ช่วงสุดสัปดาห์หรือช่วงข่าว ซึ่งจะกลับมาปกติเองหลังตลาดเปิด ลองกดปรับซ้ำตอนตลาดเปิดเพื่อเทียบ</span>`;
+  run();
+};
+$('run').onclick = run;
+$('doImport').onclick = ()=> applyImport($('paste').value);
+$('clearImport').onclick = ()=>{ IMPORTED=null; $('paste').value=''; setSrc('sim'); $('impMsg').textContent='ล้างข้อมูลนำเข้าแล้ว กลับไปใช้โหมดจำลองกริด'; run(); };
+$('csv').onchange = e=>{
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => { $('paste').value = rd.result; applyImport(rd.result); };
+  rd.onerror = () => { $('impMsg').innerHTML='<span class="dg">เปิดไฟล์ไม่สำเร็จ ลองคัดลอกเนื้อหามาวางแทน</span>'; };
+  rd.readAsText(f);
+};
+$('scen').onclick = e=>{
+  const b = e.target.closest('button[data-px]'); if (!b) return;
+  $('cur').value = parseFloat(b.dataset.px).toFixed(DG); run();
+};
+$('addFw').onclick = ()=>{
+  FOLLOWERS.push({name:'ผู้ติดตาม '+String.fromCharCode(65+FOLLOWERS.length), bal:5000, lev:100, mode:'cap', mult:1});
+  renderFollowerInputs(); run();
+};
+$('fwList').addEventListener('input', e=>{
+  const t=e.target, i=+t.dataset.i, k=t.dataset.k; if (isNaN(i)||!k) return;
+  FOLLOWERS[i][k] = (k==='name') ? t.value : parseFloat(t.value)||0;
+  runLater();
+});
+$('fwList').addEventListener('change', e=>{
+  const t=e.target; if (t.dataset.k==='mode'){ FOLLOWERS[+t.dataset.i].mode=t.value; renderFollowerInputs(); run(); }
+});
+$('fwList').addEventListener('click', e=>{
+  const b=e.target.closest('[data-del]'); if (!b) return;
+  FOLLOWERS.splice(+b.dataset.del,1); renderFollowerInputs(); run();
+});
+let _t=null;
+const runLater = ()=>{ clearTimeout(_t); _t=setTimeout(run,140); };
+document.querySelectorAll('.rail input, .rail select').forEach(el=> el.addEventListener('input', runLater));
+['flotstep','fminlot'].forEach(id=> $(id).addEventListener('input', runLater));
+
+
+/* ============ live sync ============ */
+let syncTimer=null, fileHandle=null, fileMod=0, fileTimer=null;
+function syncMsg(html, cls){
+  $('syncMsg').innerHTML = `<span class="dot ${cls||''}"></span>` + html;
+}
+async function pullURL(silent){
+  const url = $('syncUrl').value.trim();
+  if (!url){ syncMsg('<span class="wr">ยังไม่ได้ใส่ลิงก์ CSV</span>','err'); return; }
+  try{
+    const r = await fetch(url, {cache:'no-store'});
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    const txt = await r.text();
+    if (/<html/i.test(txt.slice(0,400))) throw new Error('ลิงก์นี้ตอบกลับเป็นหน้าเว็บ ไม่ใช่ CSV');
+    $('paste').value = txt;
+    applyImport(txt, true);
+  }catch(e){
+    syncMsg(`<span class="dg">ดึงข้อมูลไม่สำเร็จ: ${e.message}</span> <span class="dim">ถ้าขึ้น Failed to fetch แปลว่าชีตยังไม่ได้เผยแพร่เป็น CSV หรือเบราว์เซอร์บล็อกเพราะเปิดไฟล์จากเครื่อง ลองวางไฟล์นี้บนเว็บเซิร์ฟเวอร์ หรือใช้ปุ่มเฝ้าดูไฟล์ในเครื่องแทน</span>`,'err');
+    stopSync();
+  }
+}
+function startSync(){
+  stopSync();
+  const sec = Math.max(5, parseFloat($('syncEvery').value)||30);
+  pullURL();
+  syncTimer = setInterval(pullURL, sec*1000);
+  $('syncStart').textContent = 'กำลังดึงอัตโนมัติ';
+}
+function stopSync(){
+  if (syncTimer){ clearInterval(syncTimer); syncTimer=null; }
+  $('syncStart').textContent = 'เริ่มดึงอัตโนมัติ';
+}
+async function watchLocal(){
+  if (!window.showOpenFilePicker){
+    syncMsg('<span class="dg">เบราว์เซอร์นี้ไม่รองรับการเฝ้าดูไฟล์ ใช้ Chrome หรือ Edge บนคอมพิวเตอร์</span>','err'); return;
+  }
+  try{
+    [fileHandle] = await window.showOpenFilePicker({
+      types:[{description:'ตารางข้อมูล', accept:{'text/csv':['.csv','.txt','.tsv']}}]
+    });
+    if (fileTimer) clearInterval(fileTimer);
+    fileMod = 0;
+    const tick = async ()=>{
+      try{
+        const f = await fileHandle.getFile();
+        if (f.lastModified !== fileMod){
+          fileMod = f.lastModified;
+          const txt = await f.text();
+          $('paste').value = txt;
+          applyImport(txt, true);
+        }
+      }catch(e){ syncMsg('<span class="dg">อ่านไฟล์ไม่ได้: '+e.message+'</span>','err'); clearInterval(fileTimer); }
+    };
+    await tick();
+    fileTimer = setInterval(tick, Math.max(2, parseFloat($('syncEvery').value)||30)*1000);
+  }catch(e){ /* ผู้ใช้ยกเลิกการเลือกไฟล์ */ }
+}
+$('syncNow').onclick = ()=> pullURL();
+$('syncStart').onclick = startSync;
+$('syncStop').onclick = ()=>{ stopSync(); if (fileTimer){clearInterval(fileTimer); fileTimer=null;} syncMsg('หยุดซิงค์แล้ว'); };
+$('watchFile').onclick = watchLocal;
+
+/* ============ settings profiles ============ */
+const KEYS = ['balance','lev','so','mc','mbasis','cs','dg','swap','days','comm','entry','cur','step','maxlv','lot0','mult','lotstep','minlot','flotstep','fminlot','mmult','swapUnit','triple'];
+const STORE='rmrc_profiles_v1', LASTKEY='rmrc_last_v1';
+function snapshot(){
+  const o = {v:1, sym:$('sym').value, dir:DIR, src:SRC, followers:FOLLOWERS,
+             imported:IMPORTED, syncUrl:$('syncUrl').value, syncEvery:$('syncEvery').value, inputs:{}};
+  KEYS.forEach(k=> o.inputs[k] = $(k).value);
+  return o;
+}
+function restore(o){
+  if (!o || !o.inputs) return false;
+  if (o.sym) $('sym').value = o.sym;
+  KEYS.forEach(k=>{ if (o.inputs[k]!==undefined) $(k).value = o.inputs[k]; });
+  if (Array.isArray(o.followers) && o.followers.length) FOLLOWERS = o.followers;
+  IMPORTED = Array.isArray(o.imported) ? o.imported : null;
+  if (o.syncUrl!==undefined) $('syncUrl').value = o.syncUrl;
+  if (o.syncEvery) $('syncEvery').value = o.syncEvery;
+  setDir(o.dir === -1 ? -1 : 1);
+  setSrc(o.src==='import' && IMPORTED && IMPORTED.length ? 'import' : 'sim');
+  renderFollowerInputs();
+  run();
+  return true;
+}
+function store(){
+  try{ return JSON.parse(localStorage.getItem(STORE)) || {}; }catch(e){ return {}; }
+}
+function writeStore(o){
+  try{ localStorage.setItem(STORE, JSON.stringify(o)); return true; }
+  catch(e){ $('prMsg').innerHTML='<span class="dg">เบราว์เซอร์นี้บันทึกลงเครื่องไม่ได้ ใช้ปุ่มส่งออกเป็นไฟล์แทน</span>'; return false; }
+}
+function saveLast(){ try{ localStorage.setItem(LASTKEY, JSON.stringify(snapshot())); }catch(e){} }
+function refreshProfiles(sel){
+  const o = store(), names = Object.keys(o).sort();
+  $('prList').innerHTML = names.length
+    ? names.map(n=>`<option${n===sel?' selected':''}>${n.replace(/</g,'&lt;')}</option>`).join('')
+    : '<option value="">ยังไม่มีชุดที่บันทึกไว้</option>';
+}
+$('prSave').onclick = ()=>{
+  const n = $('prName').value.trim();
+  if (!n){ $('prMsg').innerHTML='<span class="wr">ตั้งชื่อชุดก่อนบันทึก</span>'; $('prName').focus(); return; }
+  const o = store(); o[n] = snapshot();
+  if (writeStore(o)){ refreshProfiles(n); $('prMsg').innerHTML = `<span class="ok">บันทึกชุด “${n}” แล้ว</span>`; }
+};
+$('prLoad').onclick = ()=>{
+  const n = $('prList').value, o = store();
+  if (!n || !o[n]){ $('prMsg').innerHTML='<span class="wr">เลือกชุดที่ต้องการก่อน</span>'; return; }
+  restore(o[n]); $('prName').value = n;
+  $('prMsg').innerHTML = `<span class="ok">เรียกใช้ชุด “${n}” แล้ว</span>`;
+};
+$('prDel').onclick = ()=>{
+  const n = $('prList').value, o = store();
+  if (!n || !o[n]) return;
+  delete o[n]; writeStore(o); refreshProfiles();
+  $('prMsg').innerHTML = `<span class="dim">ลบชุด “${n}” แล้ว</span>`;
+};
+$('prExport').onclick = ()=>{
+  const blob = new Blob([JSON.stringify(snapshot(),null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rig_master_settings_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  $('prMsg').innerHTML = '<span class="ok">ส่งออกไฟล์แล้ว</span>';
+};
+$('prImport').onchange = e=>{
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try{
+      if (restore(JSON.parse(rd.result))) $('prMsg').innerHTML='<span class="ok">นำเข้าการตั้งค่าแล้ว</span>';
+      else $('prMsg').innerHTML='<span class="dg">ไฟล์นี้ไม่ใช่ไฟล์ตั้งค่าของเครื่องมือนี้</span>';
+    }catch(err){ $('prMsg').innerHTML='<span class="dg">อ่านไฟล์ไม่สำเร็จ</span>'; }
+  };
+  rd.readAsText(f);
+  e.target.value='';
+};
+
+/* ============ boot ============ */
+refreshProfiles();
+let booted = false;
+try{
+  const last = JSON.parse(localStorage.getItem(LASTKEY));
+  if (last) booted = restore(last);
+}catch(e){}
+if (!booted){ renderFollowerInputs(); run(); }
+</script>
+</body>
+</html>
